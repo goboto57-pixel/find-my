@@ -343,7 +343,7 @@ export const DevicePanel = ({ onLocateCommand, onViewPhotos }: DevicePanelProps)
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <div className="dark:border-fmd-dark-border dark:bg-fmd-dark rounded-lg border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
         {isLocationsLoading && (
           <div className="flex h-18 items-center justify-center">
             <Spinner />
@@ -359,10 +359,10 @@ export const DevicePanel = ({ onLocateCommand, onViewPhotos }: DevicePanelProps)
 
               <div className="flex-1">
                 <BatteryIndicator percentage={currentLocation.bat} />
-                <div className="text-xs text-gray-500 dark:text-gray-300">
+                <div className="text-xs text-muted-foreground">
                   {tDashboard('location.recorded_at')}
                 </div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                <div className="text-sm font-medium text-foreground">
                   {new Date(currentLocation.date).toLocaleString()}
                 </div>
               </div>
@@ -408,16 +408,16 @@ export const DevicePanel = ({ onLocateCommand, onViewPhotos }: DevicePanelProps)
         )}
 
         {!isLocationsLoading && !currentLocation && (
-          <div className="flex h-18 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex h-18 items-center justify-center text-sm text-muted-foreground">
             {tDashboard('location.no_data')}
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
         {!isPushUrlLoading && !pushUrl && (
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+          <div className="rounded-xl border border-fmd-map-accent/30 bg-fmd-map-accent/10 p-4">
+            <p className="text-fmd-map-accent text-sm">
               {tDashboard('location.no_push_url')}
             </p>
           </div>
@@ -426,7 +426,7 @@ export const DevicePanel = ({ onLocateCommand, onViewPhotos }: DevicePanelProps)
         {actionGroups.map((group, groupIndex) => (
           <div
             key={groupIndex}
-            className="dark:border-fmd-dark-border dark:bg-fmd-dark rounded-lg border border-gray-200 bg-white"
+            className="rounded-xl border border-border bg-background shadow-sm"
           >
             <ActionGroup
               title={group.title}

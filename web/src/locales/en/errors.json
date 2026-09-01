@@ -1,5 +1,6 @@
 {
   "account_not_found": "Account not found. Please register an account through the FMD Android app.",
   "login_failed": "Login failed",
-  "totp_invalid": "Invalid 2FA code"
+  "totp_invalid": "Invalid 2FA code",
+  "generic": "Something went wrong. Please try again."
 }

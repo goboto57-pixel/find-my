@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSqlVersion = 7
+const CurrentSqlVersion = 8
 
 const KeyVersion = "fmd_db_version"
 
@@ -81,8 +81,8 @@ func migrateDatabase(db *gorm.DB) {
 		migrateToV2Passwords(db)
 	}
 
-	if actualVersion < 4 && db.Migrator().HasColumn(&FMDUser{}, "UID") {
-		err := runDialectMigration("000004_rename_user_id_name", dialect, db)
+	if actualVersion < 4 {
+		err := runMigration("000004_rename_user_id_name", db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
 			return
@@ -113,6 +113,17 @@ func migrateDatabase(db *gorm.DB) {
 		err := runDialectMigration("000007_fix_totp_enabled_type", dialect, db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000007_fix_totp_enabled_type")
+			return
+		}
+	}
+
+	if actualVersion < 8 {
+		// Multi-device: adds the `accounts` table and fmd_users.account_id.
+		// Purely additive (new table + nullable FK column), so existing
+		// single-device installs are unaffected until a device is linked.
+		err := runDialectMigration("000008_add_accounts", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000008_add_accounts")
 			return
 		}
 	}

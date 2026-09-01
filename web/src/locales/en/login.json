@@ -14,5 +14,6 @@
   "privacy_notice": "Privacy Notice",
   "totp_prompt": "Enter the 6-digit code from your authenticator app.",
   "totp_code_placeholder": "6-digit code",
-  "totp_back": "Back"
+  "totp_back": "Back",
+  "switch_device_account": "Sign in with account instead"
 }

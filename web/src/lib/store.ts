@@ -16,10 +16,27 @@ interface UserData {
   fingerprint: string;
 }
 
+// Account is a separate, web-only identity used to group/switch between
+// devices. It intentionally carries no encryption keys -- it never grants
+// access to a device's E2E-encrypted data by itself.
+interface AccountData {
+  accountUsername: string;
+  accountSessionToken: string;
+}
+
 interface AppState {
   isLoggedIn: boolean;
   userData: UserData | null;
   wasAuthRestoreTried: boolean;
+
+  isAccountLoggedIn: boolean;
+  accountData: AccountData | null;
+  wasAccountAuthRestoreTried: boolean;
+  // Transient (not persisted): set when the user picks a device from the
+  // account device switcher, so LoginForm can prefill the username. The
+  // account never has the device's password, so the user still has to
+  // type it in to complete the actual device login.
+  prefillDeviceUsername: string | null;
   theme: Theme;
   units: UnitSystem;
   language: Language;
@@ -38,9 +55,14 @@ interface AppState {
   restoreAuth: () => Promise<void>;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
+
+  setAccountData: (data: AccountData, persistent: boolean) => Promise<void>;
+  accountLogout: () => void;
+  restoreAccountAuth: () => void;
 }
 
 const KEY_AUTH = 'fmd-auth';
+const KEY_ACCOUNT_AUTH = 'fmd-account-auth';
 const KEY_SETTINGS = 'fmd-settings';
 
 export const useStore = create<AppState>()(
@@ -49,6 +71,10 @@ export const useStore = create<AppState>()(
       isLoggedIn: false,
       userData: null,
       wasAuthRestoreTried: false,
+      isAccountLoggedIn: false,
+      accountData: null,
+      wasAccountAuthRestoreTried: false,
+      prefillDeviceUsername: null,
       theme: 'system',
       units: 'metric',
       language: 'en',
@@ -124,6 +150,31 @@ export const useStore = create<AppState>()(
           await clearKeys();
         } finally {
           set({ wasAuthRestoreTried: true });
+        }
+      },
+
+      setAccountData: async (data: AccountData, persistent: boolean) => {
+        if (persistent) {
+          localStorage.setItem(KEY_ACCOUNT_AUTH, JSON.stringify(data));
+        }
+        set({ accountData: data, isAccountLoggedIn: true });
+      },
+
+      accountLogout: () => {
+        localStorage.removeItem(KEY_ACCOUNT_AUTH);
+        set({ accountData: null, isAccountLoggedIn: false });
+      },
+
+      restoreAccountAuth: () => {
+        try {
+          const raw = localStorage.getItem(KEY_ACCOUNT_AUTH);
+          if (!raw) return;
+          const parsed = JSON.parse(raw) as AccountData;
+          set({ accountData: parsed, isAccountLoggedIn: true });
+        } catch {
+          localStorage.removeItem(KEY_ACCOUNT_AUTH);
+        } finally {
+          set({ wasAccountAuthRestoreTried: true });
         }
       },
 

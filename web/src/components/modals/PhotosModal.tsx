@@ -48,7 +48,7 @@ export const PhotosModal = ({ isOpen, onClose }: PhotosModalProps) => {
           )}
 
           {!isPicturesLoading && pictures.length === 0 && (
-            <div className="p-8 text-center text-gray-900 dark:text-white">
+            <div className="p-8 text-center text-foreground">
               {t('pictures.empty')}
             </div>
           )}
@@ -67,7 +67,7 @@ export const PhotosModal = ({ isOpen, onClose }: PhotosModalProps) => {
                   {t('dashboard:location.older')}
                 </Button>
 
-                <span className="text-sm text-gray-900 dark:text-white">
+                <span className="text-sm text-foreground">
                   {selectedIndex + 1} {t('pictures.of')} {pictures.length}
                 </span>
 

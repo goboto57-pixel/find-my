@@ -43,7 +43,7 @@ export const FactoryResetModal = ({ isOpen, onClose, executeCommand }: FactoryRe
         placeholder={t('factory_reset.password_placeholder')}
         autoComplete="off"
       />
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-xs text-muted-foreground">
         {t('factory_reset.password_hint')}
       </p>
     </ConfirmModal>

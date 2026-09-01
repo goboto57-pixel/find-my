@@ -23,26 +23,7 @@ CREATE TABLE IF NOT EXISTS fmd_users (
   command_sig text,
   push_url text
 );
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = current_schema()
-      AND table_name = 'fmd_users'
-      AND column_name = 'uid'
-  ) THEN
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_fmd_users_uid ON fmd_users (uid);
-  ELSIF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = current_schema()
-      AND table_name = 'fmd_users'
-      AND column_name = 'username'
-  ) THEN
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_fmd_users_username ON fmd_users (username);
-  END IF;
-END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_fmd_users_uid ON fmd_users (uid);
 
 -- locations
 CREATE TABLE IF NOT EXISTS locations (

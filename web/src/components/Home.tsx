@@ -4,6 +4,7 @@ import { DevicePanel } from '@/components/DevicePanel';
 import { LocationMap } from '@/components/LocationMap';
 import { PhotosModal } from '@/components/modals/PhotosModal';
 import { AccountInfoModal } from '@/components/modals/AccountInfoModal';
+import { AccountModal } from '@/components/modals/AccountModal';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Header } from '@/components/Header';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,6 +21,7 @@ const Home = () => {
   const [photosOpen, setPhotosOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [accountInfoOpen, setAccountInfoOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [lastLocateTime, setLastLocateTime] = useState<number | null>(null);
   const [lastLocationsFetchedTime, setLastLocationsFetchedTime] = useState<number | null>(null);
 
@@ -112,7 +114,7 @@ const Home = () => {
 
   if (!wasAuthRestoreTried) {
     return (
-      <div className="dark:bg-fmd-dark-lighter flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
         <Spinner size="lg" />
       </div>
     );
@@ -120,8 +122,16 @@ const Home = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="dark:bg-fmd-dark-lighter flex min-h-screen items-center justify-center bg-gray-50">
-        <LoginForm />
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <LoginForm onSwitchDeviceClick={() => setAccountOpen(true)} />
+        <AccountModal
+          isOpen={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          onSelectDevice={(deviceUsername) => {
+            useStore.setState({ prefillDeviceUsername: deviceUsername });
+            setAccountOpen(false);
+          }}
+        />
       </div>
     );
   }
@@ -131,9 +141,10 @@ const Home = () => {
       <Header
         onSettingsClick={() => setSettingsOpen(true)}
         onAccountInfoClick={() => setAccountInfoOpen(true)}
+        onAccountClick={() => setAccountOpen(true)}
       />
 
-      <div className="dark:bg-fmd-dark-lighter flex h-[calc(100vh-3.1rem)] flex-col bg-gray-50 text-gray-900 dark:text-white">
+      <div className="flex h-[calc(100vh-3.6rem)] flex-col bg-muted/40 text-foreground">
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:overflow-hidden">
           {userData && (
             <div className="order-2 w-full lg:order-1 lg:w-100 lg:shrink-0">
@@ -144,7 +155,7 @@ const Home = () => {
             </div>
           )}
 
-          <div className="order-1 min-h-96 flex-1 rounded-lg lg:order-2 lg:min-h-0">
+          <div className="order-1 min-h-96 flex-1 overflow-hidden rounded-xl border border-border shadow-sm lg:order-2 lg:min-h-0">
             <LocationMap />
           </div>
         </div>
@@ -155,6 +166,19 @@ const Home = () => {
       <AccountInfoModal isOpen={accountInfoOpen} onClose={() => setAccountInfoOpen(false)} />
 
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <AccountModal
+        isOpen={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        onSelectDevice={(deviceUsername) => {
+          // Switching devices means logging out of the current device
+          // session first; the device password still has to be entered
+          // manually since the account never holds it.
+          void useStore.getState().logout();
+          useStore.setState({ prefillDeviceUsername: deviceUsername });
+          setAccountOpen(false);
+        }}
+      />
     </>
   );
 };

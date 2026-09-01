@@ -20,12 +20,12 @@ export const AccountInfoModal = ({ isOpen, onClose }: AccountInfoModalProps) => 
         </DialogHeader>
 
         <div className="pt-2">
-          <div className="pb-1 text-sm text-gray-600 dark:text-gray-400">{t('push_url')}</div>
+          <div className="pb-1 text-sm text-muted-foreground">{t('push_url')}</div>
           <div className="text break-all">{pushUrl}</div>
         </div>
 
         <div className="pt-2">
-          <div className="pb-1 text-sm text-gray-600 dark:text-gray-400">
+          <div className="pb-1 text-sm text-muted-foreground">
             {t('key_fingerprint')}
           </div>
           <div className="text break-all">{userData?.fingerprint ?? '??'}</div>

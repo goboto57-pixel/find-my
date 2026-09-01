@@ -303,13 +303,13 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <h3 className="text-fmd-green mb-3 font-semibold">{t('security.totp_title')}</h3>
 
               {totpEnabled === null && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('security.loading')}</p>
+                <p className="text-sm text-muted-foreground">{t('security.loading')}</p>
               )}
 
               {totpEnabled === true && (
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="text-fmd-green h-5 w-5" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm text-muted-foreground">
                     {t('security.totp_status_enabled')}
                   </span>
                   <Button
@@ -330,7 +330,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
               {totpEnabled === false && totpSetupQr && (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-sm text-muted-foreground">
                     {t('security.totp_scan_instruction')}
                   </p>
                   <img
@@ -338,7 +338,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     alt="TOTP QR code"
                     className="h-40 w-40"
                   />
-                  <p className="font-mono text-xs break-all text-gray-600 dark:text-gray-400">
+                  <p className="font-mono text-xs break-all text-muted-foreground">
                     {totpSetupSecret}
                   </p>
                   <Input
@@ -358,19 +358,19 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             <div>
               <h3 className="text-fmd-green mb-3 font-semibold">{t('security.audit_log')}</h3>
               {!auditLog && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('security.loading')}</p>
+                <p className="text-sm text-muted-foreground">{t('security.loading')}</p>
               )}
               {auditLog && auditLog.length === 0 && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {t('security.audit_log_empty')}
                 </p>
               )}
               {auditLog && auditLog.length > 0 && (
-                <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <ul className="space-y-1 text-sm text-muted-foreground">
                   {auditLog.map((entry, i) => (
-                    <li key={i} className="flex justify-between gap-4 border-b border-gray-100 py-1 dark:border-gray-800">
+                    <li key={i} className="flex justify-between gap-4 border-b border-border py-1">
                       <span>{t(`security.audit_events.${entry.event}`, entry.event)}</span>
-                      <span className="text-gray-500 dark:text-gray-500">
+                      <span className="text-muted-foreground">
                         {new Date(entry.createdAt * 1000).toLocaleString()}
                       </span>
                     </li>
@@ -382,11 +382,11 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <TabsContent
             value="about"
-            className="max-h-96 space-y-4 overflow-y-auto text-gray-900 dark:text-white"
+            className="max-h-96 space-y-4 overflow-y-auto text-foreground"
           >
             <div>
               <h3 className="text-fmd-green font-semibold">FMD Server</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{t('about_text')}</p>
+              <p className="text-sm text-muted-foreground">{t('about_text')}</p>
             </div>
 
             <div>
@@ -397,7 +397,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     href="https://gitlab.com/fmd-foss/fmd-server"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-muted-foreground"
                   >
                     <ExternalLink className="h-4 w-4" />
                     {t('login:source_code')}
@@ -408,7 +408,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     href="https://fmd-foss.org"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-muted-foreground"
                   >
                     <ExternalLink className="h-4 w-4" />
                     {t('login:project_website')}
@@ -417,7 +417,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 <li>
                   <Link
                     to="/privacy"
-                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                    className="hover:text-fmd-green dark:hover:text-fmd-green flex items-center gap-2 text-muted-foreground"
                   >
                     <Shield className="h-4 w-4" />
                     {t('login:privacy_notice')}

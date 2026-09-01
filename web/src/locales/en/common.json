@@ -6,5 +6,10 @@
   "confirm": "Confirm",
   "close": "Close",
   "okay": "Okay",
-  "language": "Language"
+  "language": "Language",
+  "login": "Log in",
+  "register": "Register",
+  "password": "Password",
+  "loading": "Loading…",
+  "switch_device": "Switch device"
 }

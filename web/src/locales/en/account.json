@@ -1,0 +1,17 @@
+{
+  "title": "Account",
+  "username": "Account username",
+  "register_hint": "This creates a web-only account used to switch between your devices. It does not replace your device login, and it never has access to your locations or photos on its own.",
+  "login_success": "Signed in",
+  "register_success": "Account created",
+  "signed_in_as": "Signed in as",
+  "your_devices": "Your devices",
+  "no_devices": "No devices linked yet.",
+  "unlink": "Unlink",
+  "unlink_success": "Device unlinked",
+  "link_a_device": "Link a device",
+  "link_hint": "Enter a device's own username and password to add it to this account. This only proves you know the device's password once -- it doesn't change or share the device's encryption keys.",
+  "device_username": "Device username",
+  "device_password": "Device password",
+  "link_success": "Device linked"
+}

@@ -49,12 +49,12 @@ export const ConfirmModal = ({
         <DialogHeader>
           <div className="flex items-center gap-3 pb-4">
             {isDestructive && (
-              <div className="rounded-full bg-red-100 p-3 dark:bg-red-950">
-                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="rounded-full bg-destructive/10 p-3">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
             )}
 
-            <DialogTitle className={cn(isDestructive ? 'text-red-600 dark:text-red-400' : '')}>
+            <DialogTitle className={cn(isDestructive ? 'text-destructive' : '')}>
               {title}
             </DialogTitle>
           </div>

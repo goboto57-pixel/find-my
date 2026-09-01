@@ -11,6 +11,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
 
   useEffect(() => {
     void useStore.getState().restoreAuth();
+    useStore.getState().restoreAccountAuth();
   }, []);
 
   useEffect(() => {

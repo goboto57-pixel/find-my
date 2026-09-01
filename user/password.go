@@ -70,3 +70,16 @@ func (user *FMDUser) setPasswordData(saltInner string, innerPwHash string) {
 	user.HashedPassword = hashPasswordForLogin(innerPwHash)
 	user.Salt = saltInner
 }
+
+// Same scheme as FMDUser.setPasswordData, applied to an Account instead.
+// Accounts don't hold any encryption material, so this hash is used for
+// login authentication only -- Salt is still stored so a client can
+// recompute the same client-side Argon2 hash on a future login.
+func (account *Account) setPasswordData(saltInner string, innerPwHash string) {
+	if len(saltInner) == 0 {
+		saltInner = getSaltFromArgon2EncodedHash(innerPwHash)
+	}
+
+	account.HashedPassword = hashPasswordForLogin(innerPwHash)
+	account.Salt = saltInner
+}

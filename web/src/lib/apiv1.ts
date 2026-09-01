@@ -1,5 +1,5 @@
 import { logout, useStore } from '@/lib/store';
-import { decryptData, sign, unwrapPrivateKey } from './crypto';
+import { decryptData, hashPasswordForLogin, sign, unwrapPrivateKey } from './crypto';
 import {
   BaseApiService,
   HTTP,
@@ -40,7 +40,20 @@ export const ENDPOINTS = {
   TOTP_CONFIRM: `${API_BASE}/totp/confirm`,
   TOTP_DISABLE: `${API_BASE}/totp/disable`,
   TOTP_STATUS: `${API_BASE}/totp/status`,
+  ACCOUNT_REGISTER: `${API_BASE}/account/register`,
+  ACCOUNT_SALT: `${API_BASE}/account/salt`,
+  ACCOUNT_REQUEST_ACCESS: `${API_BASE}/account/requestAccess`,
+  ACCOUNT_DEVICES: `${API_BASE}/account/devices`,
+  ACCOUNT_DEVICES_LINK: `${API_BASE}/account/devices/link`,
+  ACCOUNT_DEVICES_UNLINK: `${API_BASE}/account/devices/unlink`,
 } as const;
+
+export interface AccountDeviceSummary {
+  Username: string;
+  DisplayName: string;
+  Tags: string;
+  LastSeenTime: number;
+}
 
 export class ApiV1Service extends BaseApiService {
   async getSalt(userName: string): Promise<string> {
@@ -276,6 +289,89 @@ export class ApiV1Service extends BaseApiService {
     const { userData } = useStore.getState();
     await requestObject(ENDPOINTS.TOTP_DISABLE, HTTP.POST, {
       IDT: userData!.sessionToken,
+    });
+  }
+
+  // ------- Multi-device: Accounts -------
+  //
+  // An account is a separate, web-only login used only to group and switch
+  // between devices. It never receives a device's E2E encryption keys.
+
+  async getAccountSalt(accountUsername: string): Promise<string> {
+    const response = await requestObject<DataPackage>(ENDPOINTS.ACCOUNT_SALT, HTTP.PUT, {
+      IDT: accountUsername,
+      Data: 'unused',
+    });
+    return response.Data;
+  }
+
+  async registerAccount(accountUsername: string, password: string): Promise<void> {
+    // Reuse the same client-side salt generation as device registration would;
+    // the server just stores whatever salt/hash pair it's given.
+    const salt = crypto.getRandomValues(new Uint8Array(16)).reduce(
+      (str, byte) => str + byte.toString(16).padStart(2, '0'),
+      ''
+    );
+    const hashedPassword = await hashPasswordForLogin(password, salt);
+
+    await requestObject(ENDPOINTS.ACCOUNT_REGISTER, HTTP.POST, {
+      Salt: salt,
+      HashedPassword: hashedPassword,
+      RequestedUsername: accountUsername,
+    });
+  }
+
+  async loginAccount(
+    accountUsername: string,
+    password: string,
+    rememberMe: boolean
+  ): Promise<void> {
+    const salt = await this.getAccountSalt(accountUsername);
+    const passwordAuthHash = await hashPasswordForLogin(password, salt);
+    const sessionDurationSeconds = rememberMe ? ONE_WEEK_SECONDS : 0;
+
+    const response = await requestObject<DataPackage>(ENDPOINTS.ACCOUNT_REQUEST_ACCESS, HTTP.PUT, {
+      IDT: accountUsername,
+      Data: passwordAuthHash,
+      SessionDurationSeconds: sessionDurationSeconds,
+    });
+
+    const { setAccountData } = useStore.getState();
+    await setAccountData(
+      { accountUsername, accountSessionToken: response.Data },
+      rememberMe
+    );
+  }
+
+  async getAccountDevices(): Promise<AccountDeviceSummary[]> {
+    const { accountData } = useStore.getState();
+    const url = `${ENDPOINTS.ACCOUNT_DEVICES}?idt=${encodeURIComponent(
+      accountData!.accountSessionToken
+    )}`;
+    const response = await fetch(url, { method: HTTP.GET });
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    return (await response.json()) as AccountDeviceSummary[];
+  }
+
+  async linkDeviceToAccount(deviceUsername: string, devicePassword: string): Promise<void> {
+    const { accountData } = useStore.getState();
+    const deviceSalt = await new ApiV1Service().getSalt(deviceUsername);
+    const devicePasswordHash = await hashPasswordForLogin(devicePassword, deviceSalt);
+
+    await requestObject(ENDPOINTS.ACCOUNT_DEVICES_LINK, HTTP.POST, {
+      IDT: accountData!.accountSessionToken,
+      DeviceUsername: deviceUsername,
+      DevicePasswordHash: devicePasswordHash,
+    });
+  }
+
+  async unlinkDeviceFromAccount(deviceUsername: string): Promise<void> {
+    const { accountData } = useStore.getState();
+    await requestObject(ENDPOINTS.ACCOUNT_DEVICES_UNLINK, HTTP.POST, {
+      IDT: accountData!.accountSessionToken,
+      DeviceUsername: deviceUsername,
     });
   }
 }

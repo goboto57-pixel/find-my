@@ -26,18 +26,18 @@ export const ActionItem = ({
       variant="ghost"
       onClick={onClick}
       disabled={disabled}
-      className="h-auto w-full justify-start gap-3 rounded-none border-b border-gray-200 p-4 last:border-b-0 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-white/8"
+      className="h-auto w-full justify-start gap-3 rounded-none border-b border-border p-4 last:border-b-0 hover:bg-accent"
     >
       <div
         className={cn(
           'rounded-lg p-2',
-          isDestructive ? 'bg-red-100 dark:bg-red-950' : 'bg-gray-100 dark:bg-gray-800'
+          isDestructive ? 'bg-destructive/10' : 'bg-muted'
         )}
       >
         <Icon
           className={cn(
             'h-5 w-5',
-            isDestructive ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'
+            isDestructive ? 'text-destructive' : 'text-muted-foreground'
           )}
         />
       </div>
@@ -45,13 +45,13 @@ export const ActionItem = ({
         <div
           className={cn(
             'font-medium',
-            isDestructive ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'
+            isDestructive ? 'text-destructive' : 'text-foreground'
           )}
         >
           {title}
         </div>
         {description && (
-          <div className="pt-1 text-sm whitespace-normal text-gray-600 dark:text-gray-400">
+          <div className="pt-1 text-sm whitespace-normal text-muted-foreground">
             {description}
           </div>
         )}

@@ -4,20 +4,20 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* FMD field-instrument palette: warm paper / deep signal-green ink,
-     replacing the previous flat SaaS green+white with a more distinctive,
-     utilitarian identity fitting a device-recovery tool. */
-  --color-fmd-green: #4f9d5c;
-  --color-fmd-green-dark: #3d7d48;
-  --color-fmd-dark: #14201c;
-  --color-fmd-dark-lighter: #1c2a24;
-  --color-fmd-dark-border: #33443c;
-  --color-fmd-light: #f2f0e6;
-  --color-fmd-light-darker: #e6e2d3;
-  --color-fmd-light-border: #cfc9b4;
+  /* FMD "beacon" identity, redesign 2: deep navy ink + emerald-cyan signal,
+     replacing the previous warm-paper/muted-green instrument look with a
+     cooler, higher-contrast tracking/recovery-tool identity. */
+  --color-fmd-green: #16a37a;
+  --color-fmd-green-dark: #0f7f5f;
+  --color-fmd-dark: #0b1220;
+  --color-fmd-dark-lighter: #131b2c;
+  --color-fmd-dark-border: #22314a;
+  --color-fmd-light: #f4f5f2;
+  --color-fmd-light-darker: #e7e8e2;
+  --color-fmd-light-border: #d3d5cc;
   --color-fmd-map-primary: #3f6fa8;
-  --color-fmd-map-accent: #c1553b;
-  --color-fmd-alert: #c1553b;
+  --color-fmd-map-accent: #e0873c;
+  --color-fmd-alert: #d6483f;
 
   --font-family-sans:
     ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -108,38 +108,38 @@
 }
 
 :root {
-  --radius: 0.375rem; /* flatter, more instrument-panel than SaaS-rounded */
-  --background: oklch(0.954 0.013 97.4); /* fmd-light, warm paper */
-  --foreground: oklch(0.231 0.019 172); /* fmd-dark ink */
-  --primary: oklch(0.629 0.124 147.6); /* FMD signal green #4f9d5c */
+  --radius: 0.5rem; /* slightly softer than the flat instrument-panel look */
+  --background: oklch(0.969 0.004 121.6); /* fmd-light, cool paper */
+  --foreground: oklch(0.183 0.031 263.4); /* fmd-dark navy ink */
+  --primary: oklch(0.637 0.127 166.5); /* FMD signal emerald-cyan #16a37a */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.912 0.021 94.5); /* fmd-light-darker */
-  --secondary-foreground: oklch(0.231 0.019 172);
-  --muted: oklch(0.912 0.021 94.5);
-  --muted-foreground: oklch(0.511 0.026 155.4);
-  --accent: oklch(0.912 0.021 94.5);
-  --accent-foreground: oklch(0.231 0.019 172);
-  --destructive: oklch(0.582 0.145 34.8); /* fmd-alert rust-red */
-  --border: oklch(0.835 0.029 93.8);
-  --input: oklch(0.835 0.029 93.8);
-  --ring: oklch(0.629 0.124 147.6);
+  --secondary: oklch(0.929 0.008 114.2); /* fmd-light-darker */
+  --secondary-foreground: oklch(0.183 0.031 263.4);
+  --muted: oklch(0.929 0.008 114.2);
+  --muted-foreground: oklch(0.499 0.016 162.0);
+  --accent: oklch(0.929 0.008 114.2);
+  --accent-foreground: oklch(0.183 0.031 263.4);
+  --destructive: oklch(0.599 0.18 27.5); /* fmd-alert */
+  --border: oklch(0.869 0.012 116.8);
+  --input: oklch(0.869 0.012 116.8);
+  --ring: oklch(0.637 0.127 166.5);
 }
 
 .dark {
-  --background: oklch(0.231 0.019 172); /* fmd-dark */
-  --foreground: oklch(0.954 0.013 97.4); /* warm paper text */
-  --primary: oklch(0.629 0.124 147.6); /* FMD signal green */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.27 0.022 166.4); /* fmd-dark-lighter */
-  --secondary-foreground: oklch(0.954 0.013 97.4);
-  --muted: oklch(0.27 0.022 166.4);
-  --muted-foreground: oklch(0.768 0.022 156.7);
-  --accent: oklch(0.27 0.022 166.4);
-  --accent-foreground: oklch(0.954 0.013 97.4);
-  --destructive: oklch(0.582 0.145 34.8);
-  --border: oklch(0.369 0.026 164.6);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.629 0.124 147.6);
+  --background: oklch(0.183 0.031 263.4); /* fmd-dark navy */
+  --foreground: oklch(0.969 0.004 121.6); /* cool paper text */
+  --primary: oklch(0.637 0.127 166.5); /* FMD signal emerald-cyan */
+  --primary-foreground: oklch(0.1 0.02 260);
+  --secondary: oklch(0.223 0.035 264.5); /* fmd-dark-lighter */
+  --secondary-foreground: oklch(0.969 0.004 121.6);
+  --muted: oklch(0.223 0.035 264.5);
+  --muted-foreground: oklch(0.714 0.016 164.5);
+  --accent: oklch(0.223 0.035 264.5);
+  --accent-foreground: oklch(0.969 0.004 121.6);
+  --destructive: oklch(0.599 0.18 27.5);
+  --border: oklch(0.312 0.05 260.3);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.637 0.127 166.5);
 }
 
 @layer base {

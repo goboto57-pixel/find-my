@@ -26,7 +26,7 @@ const PrivacyContent = () => {
           {!isEmbedded && (
             <Link
               to="/"
-              className="hover:text-fmd-green dark:hover:text-fmd-green mb-8 inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors dark:text-gray-400"
+              className="hover:text-fmd-green mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Back</span>
@@ -34,12 +34,12 @@ const PrivacyContent = () => {
           )}
 
           <div className="mb-8">
-            <h1 className="mb-2 text-4xl font-bold text-gray-900 dark:text-white">FMD Server</h1>
+            <h1 className="mb-2 text-4xl font-bold text-foreground">FMD Server</h1>
             <h2 className="text-fmd-green text-2xl font-semibold">Privacy Notice</h2>
           </div>
 
           <nav className="dark:border-fmd-dark-border dark:bg-fmd-dark-lighter mb-8 rounded-lg border border-fmd-light-border bg-fmd-light-darker p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="mb-4 text-lg font-semibold text-foreground">
               Quick Navigation
             </h3>
             <ul className="space-y-2 text-sm">
@@ -93,24 +93,24 @@ const PrivacyContent = () => {
 
           <div className="space-y-8">
             <section id="visiting">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 What data is stored when visiting the website?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 To establish a connection, your IP address is transmitted. To prevent abuse, the IP
                 address is logged for failed login attempts.
               </p>
             </section>
 
             <section id="stored">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 What data is stored on the server?
               </h3>
 
               <div className="space-y-4">
                 <div>
-                  <p className="mb-2 font-medium text-gray-900 dark:text-white">In plaintext:</p>
-                  <ul className="ml-4 list-inside list-disc space-y-1 text-gray-700 dark:text-gray-300">
+                  <p className="mb-2 font-medium text-foreground">In plaintext:</p>
+                  <ul className="ml-4 list-inside list-disc space-y-1 text-muted-foreground">
                     <li>Username</li>
                     <li>Password Hash</li>
                     <li>Public key</li>
@@ -120,23 +120,23 @@ const PrivacyContent = () => {
                 </div>
 
                 <div>
-                  <p className="mb-2 font-medium text-gray-900 dark:text-white">Signed:</p>
-                  <ul className="ml-4 list-inside list-disc space-y-1 text-gray-700 dark:text-gray-300">
+                  <p className="mb-2 font-medium text-foreground">Signed:</p>
+                  <ul className="ml-4 list-inside list-disc space-y-1 text-muted-foreground">
                     <li>Command to be delivered to the phone</li>
                   </ul>
                 </div>
 
                 <div>
-                  <p className="mb-2 font-medium text-gray-900 dark:text-white">Encrypted:</p>
-                  <ul className="ml-4 list-inside list-disc space-y-1 text-gray-700 dark:text-gray-300">
+                  <p className="mb-2 font-medium text-foreground">Encrypted:</p>
+                  <ul className="ml-4 list-inside list-disc space-y-1 text-muted-foreground">
                     <li>Private key</li>
                     <li>If uploaded: pictures</li>
                     <li>If uploaded: locations (lat, lon, battery level, timestamp, etc.)</li>
                   </ul>
                 </div>
 
-                <p className="border-l-4 border-yellow-500 bg-yellow-50 p-4 leading-relaxed text-gray-700 dark:bg-yellow-900/20 dark:text-gray-300">
-                  <strong className="text-gray-900 dark:text-white">Important:</strong> You need to
+                <p className="border-l-4 border-fmd-map-accent bg-fmd-map-accent/10 p-4 leading-relaxed text-muted-foreground">
+                  <strong className="text-foreground">Important:</strong> You need to
                   keep your password safe! Your password is used to unlock the encrypted private
                   key.
                 </p>
@@ -144,10 +144,10 @@ const PrivacyContent = () => {
             </section>
 
             <section id="encryption">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 How exactly does the encryption work?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 Please see the description on the{' '}
                 <a
                   href="https://fmd-foss.org/docs/fmd-server/security"
@@ -162,40 +162,40 @@ const PrivacyContent = () => {
             </section>
 
             <section id="transferred">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 Is my data transferred/sold/etc?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 Your data is only used to provide the functionality of finding and controlling your
                 device. It is not given to other parties.
               </p>
             </section>
 
             <section id="access">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 Who has access to the data?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 Only the server operator has access to the database. But all important data is
                 encrypted anyway.
               </p>
             </section>
 
             <section id="delete">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 How can I delete my data from the server?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 You can delete your account using the &quot;Delete Account&quot; button in the web
                 interface and in the Android app.
               </p>
             </section>
 
             <section id="export">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 How can I export my data?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 Log in via the web interface, click on the settings icon, and then click on
                 &quot;Export Data&quot;. This will fetch all data from the server, decrypt it
                 locally, and locally create a ZIP file that you can save to your computer.
@@ -203,20 +203,20 @@ const PrivacyContent = () => {
             </section>
 
             <section id="change-password">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 How can I change my password?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 You can change your password in the FMD Android app in the FMD Server settings
                 section.
               </p>
             </section>
 
             <section id="reset-password">
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-3 text-xl font-semibold text-foreground">
                 How can I reset my password?
               </h3>
-              <p className="leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="leading-relaxed text-muted-foreground">
                 You cannot reset your password, only change it. The server administrator cannot
                 reset or change your password. They can only delete your account entirely (allowing
                 you to register again). However, since this is destructive, the server administrator

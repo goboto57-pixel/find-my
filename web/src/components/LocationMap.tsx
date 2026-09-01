@@ -278,7 +278,7 @@ export const LocationMap = () => {
       <div ref={mapRef} className="relative flex-1 rounded-lg" />
 
       {isLocationsLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80">
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80">
           <Spinner />
         </div>
       )}

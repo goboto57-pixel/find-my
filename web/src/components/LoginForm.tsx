@@ -12,14 +12,21 @@ import { PasswordInput } from '@/components/PasswordInput';
 import { Checkbox } from '@/components/Checkbox';
 import { WebCryptoWarningModal } from './modals/WebCryptoWarningModal';
 import { LanguageNativeSelect } from './LanguageNativeSelect';
+import { useStore } from '@/lib/store';
 
 const SLOW_LOGIN_THRESHOLD_MS = 10_000;
 const SLOW_LOGIN_TOAST_DURATION_MS = 30_000;
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  onSwitchDeviceClick?: () => void;
+}
+
+export const LoginForm = ({ onSwitchDeviceClick }: LoginFormProps = {}) => {
   const { t } = useTranslation(['login', 'errors']);
 
-  const [fmdId, setFmdId] = useState('');
+  const prefillDeviceUsername = useStore((s) => s.prefillDeviceUsername);
+
+  const [fmdId, setFmdId] = useState(prefillDeviceUsername ?? '');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,6 +37,14 @@ export const LoginForm = () => {
   const [totpRequired, setTotpRequired] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [pendingPasswordHash, setPendingPasswordHash] = useState('');
+
+  useEffect(() => {
+    if (prefillDeviceUsername) {
+      useStore.setState({ prefillDeviceUsername: null });
+    }
+    // Only run once on mount to consume the transient prefill value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -122,25 +137,30 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="flex min-h-full flex-col px-4">
+    <div className="from-fmd-green/5 via-background to-background flex min-h-full flex-col bg-gradient-to-b px-4">
       <div className="flex justify-end pt-8">
         <LanguageNativeSelect />
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center py-8">
-        <div className="dark:border-fmd-dark-border dark:bg-fmd-dark w-full max-w-md rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-          <h1 className="text-fmd-green mb-6 text-center text-2xl font-bold">FMD Server</h1>
+        <div className="w-full max-w-md rounded-xl border border-border bg-background p-8 shadow-lg shadow-black/[0.03] dark:shadow-black/20">
+          <div className="mb-6 flex flex-col items-center gap-3">
+            <span className="bg-fmd-green/10 flex h-14 w-14 items-center justify-center rounded-2xl">
+              <img src="./icon.svg" alt="FMD" width="30" height="30" className="text-fmd-green" />
+            </span>
+            <h1 className="text-center text-2xl font-bold tracking-tight text-foreground">
+              FMD Server
+            </h1>
+          </div>
 
-          <p className="mb-2 text-center text-sm text-gray-700 dark:text-gray-300">
-            {t('subtitle')}
-          </p>
-          <p className="mb-8 text-center text-sm text-gray-700 dark:text-gray-300">
+          <p className="mb-2 text-center text-sm text-muted-foreground">{t('subtitle')}</p>
+          <p className="mb-8 text-center text-sm text-muted-foreground">
             {t('setup_instruction_1')}{' '}
             <a
               href="https://f-droid.org/packages/de.nulide.findmydevice/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
+              className="hover:text-fmd-green text-foreground underline decoration-border underline-offset-2 transition-colors duration-200"
             >
               {t('setup_instruction_2')}
             </a>{' '}
@@ -148,7 +168,7 @@ export const LoginForm = () => {
           </p>
 
           {/* https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete */}
-          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
             {!totpRequired ? (
               <>
                 <Input
@@ -177,9 +197,7 @@ export const LoginForm = () => {
               </>
             ) : (
               <>
-                <p className="text-center text-sm text-gray-700 dark:text-gray-300">
-                  {t('totp_prompt')}
-                </p>
+                <p className="text-center text-sm text-muted-foreground">{t('totp_prompt')}</p>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -189,10 +207,11 @@ export const LoginForm = () => {
                   placeholder={t('totp_code_placeholder')}
                   autoFocus
                   required
+                  className="text-center font-mono text-lg tracking-[0.3em]"
                 />
                 <button
                   type="button"
-                  className="hover:text-fmd-green block w-full text-center text-sm text-gray-600 underline transition-colors duration-200 dark:text-gray-400"
+                  className="hover:text-fmd-green block w-full text-center text-sm text-muted-foreground underline transition-colors duration-200"
                   onClick={() => {
                     setTotpRequired(false);
                     setTotpCode('');
@@ -207,19 +226,29 @@ export const LoginForm = () => {
             <Button type="submit" disabled={loading} size="lg" className="w-full text-lg">
               {loading ? t('logging_in') : t('log_in')}
             </Button>
+
+            {!totpRequired && onSwitchDeviceClick && (
+              <button
+                type="button"
+                className="hover:text-fmd-green block w-full text-center text-sm text-muted-foreground underline transition-colors duration-200"
+                onClick={onSwitchDeviceClick}
+              >
+                {t('switch_device_account')}
+              </button>
+            )}
           </form>
 
           <WebCryptoWarningModal />
         </div>
       </div>
 
-      <footer className="pb-4 text-center text-sm text-gray-600 dark:text-gray-400">
+      <footer className="pb-4 text-center text-sm text-muted-foreground">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <a
             href="https://fmd-foss.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
+            className="hover:text-fmd-green text-muted-foreground transition-colors duration-200"
           >
             {t('project_website')}
           </a>
@@ -228,14 +257,14 @@ export const LoginForm = () => {
             href="https://gitlab.com/fmd-foss/fmd-server/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
+            className="hover:text-fmd-green text-muted-foreground transition-colors duration-200"
           >
             {t('source_code')}
           </a>
           <span>·</span>
           <Link
             to="/privacy"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
+            className="hover:text-fmd-green text-muted-foreground transition-colors duration-200"
           >
             {t('privacy_notice')}
           </Link>
@@ -247,7 +276,7 @@ export const LoginForm = () => {
               href="https://gitlab.com/fmd-foss/fmd-server/-/releases"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-fmd-green font-mono text-xs text-gray-600 transition-colors duration-200 dark:text-gray-400"
+              className="hover:text-fmd-green font-mono text-xs text-muted-foreground transition-colors duration-200"
             >
               v{version}
             </a>

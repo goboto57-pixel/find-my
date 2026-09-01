@@ -47,6 +47,12 @@ type FMDUser struct {
 	// is end-to-end encrypted and never touches the server in plaintext).
 	TotpSecret  string
 	TotpEnabled bool
+
+	// Multi-device: optional link to the Account (if any) used to manage
+	// this device from the web UI's device switcher. Nil for devices that
+	// were never linked to an account -- those keep logging in standalone,
+	// exactly as before this feature existed.
+	AccountID *uint64 `gorm:"index"`
 }
 
 // Location Table of the Users
@@ -71,6 +77,23 @@ type AuditLog struct {
 	Event     string
 	RemoteIp  string
 	CreatedAt int64
+}
+
+// Account represents a *login* an owner uses on the web UI to see and
+// switch between several of their devices. It intentionally does NOT
+// carry any encryption material: locations/pictures stay end-to-end
+// encrypted per-device exactly as before, keyed by that device's own
+// password. Linking a device to an account is a convenience/grouping
+// step (see UserRepository.LinkDeviceToAccount) -- it never grants the
+// account access to a device's data without that device's own password.
+type Account struct {
+	Id             uint64 `gorm:"primaryKey"`
+	Username       string `gorm:"uniqueIndex"`
+	Salt           string // see FMDUser.Salt: same client-side-Argon2 scheme, reused for consistency
+	HashedPassword string
+	CreatedAt      int64
+
+	Devices []FMDUser `gorm:"foreignKey:AccountID;constraint:OnDelete:SET NULL;"`
 }
 
 // Settings Table GORM (SQL)
@@ -206,6 +229,28 @@ func (db *FMDDB) GetByName(username string) (*FMDUser, error) {
 		return nil, errors.New("user not found")
 	}
 	return &user, nil
+}
+
+func (db *FMDDB) GetAccountByName(username string) (*Account, error) {
+	var account = Account{Username: username}
+	db.DB.Where(&account).Find(&account)
+	if account.Id == 0 {
+		return nil, errors.New("account not found")
+	}
+	return &account, nil
+}
+
+func (db *FMDDB) GetDevicesForAccount(accountId uint64) ([]FMDUser, error) {
+	var devices []FMDUser
+	result := db.DB.
+		Select("id", "username", "display_name", "tags", "last_seen_time").
+		Where("account_id = ?", accountId).
+		Order("username ASC").
+		Find(&devices)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return devices, nil
 }
 
 func (db *FMDDB) PreloadLocations(user *FMDUser) {

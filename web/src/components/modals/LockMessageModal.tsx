@@ -38,7 +38,7 @@ export const LockMessageModal = ({ isOpen, onClose, executeCommand }: LockMessag
         placeholder={t('lock.message_placeholder')}
         autoComplete="off"
       />
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('lock.message_hint')}</p>
+      <p className="mt-2 text-xs text-muted-foreground">{t('lock.message_hint')}</p>
     </ConfirmModal>
   );
 };

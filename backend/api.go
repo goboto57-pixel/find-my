@@ -106,6 +106,21 @@ func buildServeMux(config *viper.Viper) http.Handler {
 	apiV1Mux.HandleFunc("/totp/status", postTotpStatus)
 	apiV1Mux.HandleFunc("/totp/status/", postTotpStatus)
 
+	// Multi-device: Account API (separate web-only login used to group
+	// and switch between several devices; see backend/account_api.go).
+	apiV1Mux.HandleFunc("/account/register", registerAccount)
+	apiV1Mux.HandleFunc("/account/register/", registerAccount)
+	apiV1Mux.HandleFunc("/account/salt", requestAccountSalt)
+	apiV1Mux.HandleFunc("/account/salt/", requestAccountSalt)
+	apiV1Mux.HandleFunc("/account/requestAccess", requestAccountAccess)
+	apiV1Mux.HandleFunc("/account/requestAccess/", requestAccountAccess)
+	apiV1Mux.HandleFunc("/account/devices", getAccountDevices)
+	apiV1Mux.HandleFunc("/account/devices/", getAccountDevices)
+	apiV1Mux.HandleFunc("/account/devices/link", linkAccountDevice)
+	apiV1Mux.HandleFunc("/account/devices/link/", linkAccountDevice)
+	apiV1Mux.HandleFunc("/account/devices/unlink", unlinkAccountDevice)
+	apiV1Mux.HandleFunc("/account/devices/unlink/", unlinkAccountDevice)
+
 	// Uncomment this once the API v1 is no longer hosted at the root "/" (because we cannot have two "/" in muxFinal).
 	// Until then, as a side-effect, the static files are also served under /api/v1/.
 	// staticFilesMux := http.NewServeMux()
