@@ -1,0 +1,132 @@
+{
+  "locate_all": {
+    "title": "Tous",
+    "description": "Obtenir une localisation depuis tous les fournisseurs de localisation"
+  },
+  "factory_reset": {
+    "title": "Réinitialiser l'appareil",
+    "description": "Supprimer toutes les données et réinitialiser l'appareil aux paramètres d'usine"
+  },
+  "locate_fused": {
+    "title": "Fusionnée",
+    "description": "Obtenir une localisation depuis le réseau mobile / GPS"
+  },
+  "locate_gps": {
+    "title": "GPS",
+    "description": "Obtenir une localisation depuis le GPS"
+  },
+  "locate_cell": {
+    "title": "Réseau mobile",
+    "description": "Obtenir une localisation à partir des antennes réseaux alentours, grâce à OpenCelliD et/ou BeaconDB"
+  },
+  "locate_last": {
+    "title": "Dernière connue",
+    "description": "Obtenir la dernière localisation (rapide, mais elle peut être obsolète)"
+  },
+  "ring": {
+    "title": "Sonnerie",
+    "description": "Jouer un son à volume élevé sur l'appareil"
+  },
+  "flash": {
+    "title": "Flash",
+    "description": "Allumer la lampe torche"
+  },
+  "lock": {
+    "title": "Verrouiller",
+    "description": "Verrouiller l'écran de l'appareil"
+  },
+  "bluetooth_on": {
+    "title": "Activer le Bluetooth"
+  },
+  "camera_front": {
+    "title": "Caméra frontale",
+    "description": "Prendre une photo avec la caméra frontale"
+  },
+  "camera_back": {
+    "title": "Caméra arrière",
+    "description": "Prendre une photo avec la caméra arrière"
+  },
+  "view_photos": {
+    "title": "Voir les photos",
+    "description": "Voir les photos prises par l'appareil"
+  },
+  "gps_on": {
+    "title": "Activer les services de localisation"
+  },
+  "gps_off": {
+    "title": "Désactiver les services de localisation"
+  },
+  "bluetooth_off": {
+    "title": "Désactiver le Bluetooth"
+  },
+  "ringer_normal": {
+    "title": "Normale",
+    "description": "Définir le mode de sonnerie sur normal"
+  },
+  "ringer_vibrate": {
+    "title": "Vibreur",
+    "description": "Définir le mode de sonnerie sur vibreur"
+  },
+  "ringer_silent": {
+    "title": "Silencieux",
+    "description": "Définir le mode de sonnerie sur silencieux"
+  },
+  "dnd_on": {
+    "title": "Activer le mode Ne pas déranger"
+  },
+  "dnd_off": {
+    "title": "Désactiver le mode Ne pas déranger"
+  },
+  "success": {
+    "locate_all": "Demande de localisation…",
+    "locate_fused": "Demande de localisation…",
+    "locate_gps": "Demande de localisation…",
+    "locate_cell": "Demande de localisation…",
+    "locate_last": "Demande de dernière localisation connue…",
+    "flash": "Allumage de la lampe torche…",
+    "lock": "Verrouillage de l'appareil…",
+    "delete": "Lancement de la réinitialisation de l'appareil…",
+    "camera_front": "Prise de photo…",
+    "camera_back": "Prise de photo…",
+    "bluetooth_on": "Activation du Bluetooth…",
+    "bluetooth_off": "Désactivation du Bluetooth…",
+    "gps_on": "Activation des services de localisation…",
+    "gps_off": "Désactivation des services de localisation…",
+    "ringermode_normal": "Passage en mode sonnerie…",
+    "ringermode_vibrate": "Passage en mode vibreur…",
+    "ringermode_silent": "Passage en mode silencieux…",
+    "nodisturb_on": "Activation de Ne pas déranger…",
+    "nodisturb_off": "Désactivation de Ne pas déranger…",
+    "ring": "Sonnerie en cours sur l'appareil…"
+  },
+  "locate_group": {
+    "title": "Localiser",
+    "description": "Obtenir une localisation d'un fournisseur de localisation"
+  },
+  "general_group": {
+    "title": "Général",
+    "description": "Quelques commandes générales utiles"
+  },
+  "camera_group": {
+    "title": "Appareil photo",
+    "description": "Prendre ou voir une photo"
+  },
+  "location_service_group": {
+    "title": "Services de localisation",
+    "description": "Activer / désactiver les services de localisation"
+  },
+  "bluetooth_group": {
+    "title": "Bluetooth",
+    "description": "Activer / désactiver le Bluetooth"
+  },
+  "ringer_group": {
+    "title": "Sonnerie",
+    "description": "Choisir le mode de sonnerie"
+  },
+  "dnd_group": {
+    "title": "Ne pas déranger",
+    "description": "Activer / désactiver Ne pas déranger"
+  },
+  "enable": "Activer",
+  "disable": "Désactiver"
+}

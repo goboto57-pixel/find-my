@@ -1,0 +1,15 @@
+{
+  "subtitle": "此平台用于定位和控制您的设备。",
+  "setup_instruction_1": "开始使用前，",
+  "setup_instruction_2": "安装 FMD 安卓应用",
+  "setup_instruction_3": "到您的移动设备上。然后通过应用在 FMD 服务器上注册账户。",
+  "username_placeholder": "用户名",
+  "password_placeholder": "密码",
+  "remember_me": "记住我",
+  "log_in": "登录",
+  "logging_in": "登录中…",
+  "project_website": "项目网站",
+  "source_code": "源代码",
+  "privacy_notice": "隐私声明",
+  "login_slow": "密码哈希计算似乎较慢。这通常是因为浏览器的 JavaScript JIT（即时编译）被禁用。请启用 JIT，或耐心等待最多 5 分钟。"
+}

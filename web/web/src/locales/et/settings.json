@@ -1,0 +1,44 @@
+{
+  "about": "Rakenduse teave",
+  "title": "Seadistused",
+  "general": "Üldist",
+  "theme": "Kujundus",
+  "theme_dark": "Tume kujundus",
+  "theme_light": "Hele kujundus",
+  "theme_system": "Süsteemi kujundus",
+  "units": "Ühikud",
+  "units_metric": "Meetermõõdustik",
+  "units_imperial": "Inglise mõõdustik",
+  "account": "Kasutajakonto ja andmed",
+  "language": {
+    "title": "Keel",
+    "en": "inglise keel",
+    "de": "saksa keel",
+    "fr": "prantsuse keel",
+    "sl": "sloveeni keel",
+    "et": "eesti keel",
+    "nl": "hollandi keel",
+    "pt-BR": "portugali keel (Brasiilia)",
+    "zh-Hant": "hiina keel (traditsiooniline)",
+    "el": "kreeka keel",
+    "zh-Hans": "hiina keel (lihtsustatud)"
+  },
+  "export_data": "Ekspordi andmeid",
+  "export_data_loading_message": "Laadin andmeid alla. Kui sul on palju pilte, siis selleks võib kuluda aega.",
+  "delete_account": "Kustuta kasutajakonto",
+  "delete_account_title": "Kas kustutame kasutajakonto?",
+  "delete_account_description": "Kõik kasutajakonto andmed kustutatakse serverist jäädavalt. Seda tegevust ei saa tagasi pöörata.",
+  "about_text": "Server, mis on mõeldud FMD Androidi rakenduste haldamiseks ning seeläbi sinu seadmete juhtumiseks ja asukoha tuvastamiseks.",
+  "delete_locations": {
+    "button": "Kustuta asukohad",
+    "title": "Kas kustutad kõik asukohad?",
+    "description": "Kõik asukohtade andmed kustutatakse serverist jäädavalt. Seda tegevust ei saa tagasi pöörata.",
+    "success": "Asukohtade kustutamine õnnestus."
+  },
+  "delete_pictures": {
+    "button": "Kustuta fotod",
+    "title": "Kas kustutad kõik fotod?",
+    "description": "Kõik fotod kustutatakse serverist jäädavalt. Seda tegevust ei saa tagasi pöörata.",
+    "success": "Fotode kustutamine õnnestus."
+  }
+}
