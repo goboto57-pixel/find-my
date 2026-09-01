@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSqlVersion = 6
+const CurrentSqlVersion = 7
 
 const KeyVersion = "fmd_db_version"
 
@@ -102,6 +102,17 @@ func migrateDatabase(db *gorm.DB) {
 		err := runDialectMigration("000006_create_audit_logs", dialect, db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000006_create_audit_logs")
+			return
+		}
+	}
+
+	if actualVersion < 7 {
+		// Postgres-only bugfix: totp_enabled was created as `integer` by
+		// migration 5, but the Go struct uses `bool`, which pgx cannot
+		// encode into int4. See the postgres .up.sql for full context.
+		err := runDialectMigration("000007_fix_totp_enabled_type", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000007_fix_totp_enabled_type")
 			return
 		}
 	}
