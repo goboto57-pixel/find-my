@@ -69,7 +69,7 @@ func migrateDatabase(db *gorm.DB) {
 		return
 	}
 
-	if actualVersion < 2 && !db.Migrator().HasColumn(&FMDUser{}, "LastSeenTime") {
+	if actualVersion < 2 {
 		err := runMigration("000002_add_last_seen_time", db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000002_add_last_seen_time")
@@ -82,7 +82,7 @@ func migrateDatabase(db *gorm.DB) {
 	}
 
 	if actualVersion < 4 {
-		err := runDialectMigration("000004_rename_user_id_name", dialect, db)
+		err := runMigration("000004_rename_user_id_name", db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
 			return
