@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LockKeyhole, Radio, ShieldCheck, Smartphone, Sparkles, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -18,15 +19,11 @@ const SLOW_LOGIN_TOAST_DURATION_MS = 30_000;
 
 export const LoginForm = () => {
   const { t } = useTranslation(['login', 'errors']);
-
   const [fmdId, setFmdId] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [version, setVersion] = useState('');
-  // Set once the server responds "2FA required" for this login attempt.
-  // We keep the already-hashed password around so submitting the code
-  // doesn't require the user to retype their password.
   const [totpRequired, setTotpRequired] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [pendingPasswordHash, setPendingPasswordHash] = useState('');
@@ -37,78 +34,59 @@ export const LoginForm = () => {
         const ver = await getVersion();
         setVersion(ver);
       } catch {
-        // Failed to fetch version, ignore
+        // The version label is optional on the login screen.
       }
     })();
   }, []);
 
-  // Hash the password on a Web Worker background thread
-  const hashPasswordInWorker = (password: string, salt: string): Promise<string> =>
+  const hashPasswordInWorker = (passwordValue: string, salt: string): Promise<string> =>
     new Promise((resolve, reject) => {
       const worker = new Worker(new URL('../workers/passwordHashing.ts', import.meta.url), {
         type: 'module',
       });
-
-      worker.onmessage = (ev) => {
-        resolve(ev.data as string);
+      worker.onmessage = (event) => {
+        resolve(event.data as string);
         worker.terminate();
       };
-
-      worker.onerror = (err) => {
-        reject(new Error(err.message));
+      worker.onerror = (error) => {
+        reject(new Error(error.message));
         worker.terminate();
       };
-
-      worker.postMessage([password, salt]);
+      worker.postMessage([passwordValue, salt]);
     });
 
-  // Send the login request
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
-
     try {
       let passwordHash = pendingPasswordHash;
-
       if (!totpRequired) {
         const salt = await apiService.getSalt(fmdId);
-
         if (!salt) {
           toast.error(t('errors:account_not_found'));
           setLoading(false);
           return;
         }
-
-        // When JavaScript JIT is disabled (Jitless mode), password hashing is very slow (>= 2 mins)
-        // https://gitlab.com/fmd-foss/fmd-server/-/issues/142
-        const timeOut = setTimeout(() => {
-          const msg = t(`login_slow`);
-          toast.warning(msg, { duration: SLOW_LOGIN_TOAST_DURATION_MS });
-        }, SLOW_LOGIN_THRESHOLD_MS);
-
+        const timeout = setTimeout(
+          () => toast.warning(t('login_slow'), { duration: SLOW_LOGIN_TOAST_DURATION_MS }),
+          SLOW_LOGIN_THRESHOLD_MS
+        );
         if (window.Worker) {
-          // We need to launch the hashing in a background thread.
-          // Otherwise, the timeout won't run, since the UI thread is blocked by the hashing.
           passwordHash = await hashPasswordInWorker(password, salt);
         } else {
-          // Browser does not support Web Workers
           toast.warning(
             'Web Workers are not supported by this browser. Hashing password on main thread.'
           );
           passwordHash = hashPasswordForLogin(password, salt);
         }
-
-        clearTimeout(timeOut);
+        clearTimeout(timeout);
         setPendingPasswordHash(passwordHash);
       }
-
       await apiService.login(fmdId, password, passwordHash, rememberMe, totpCode || undefined);
     } catch (error) {
       if (error instanceof TotpRequiredError) {
         setTotpRequired(true);
         if (totpCode) {
-          // A code was already submitted and rejected -- clear it so the
-          // input doesn't silently look accepted while asking to retry.
           toast.error(t('errors:totp_invalid'));
           setTotpCode('');
         }
@@ -122,52 +100,118 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="flex min-h-full flex-col px-4">
-      <div className="flex justify-end pt-8">
+    <div className="login-page">
+      <div className="login-topbar">
+        <div className="login-brand">
+          <span className="brand-mark">
+            <Radio className="h-5 w-5" />
+          </span>
+          <span>
+            FMD <em>OS</em>
+          </span>
+        </div>
         <LanguageNativeSelect />
       </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center py-8">
-        <div className="dark:border-fmd-dark-border dark:bg-fmd-dark w-full max-w-md rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-          <h1 className="text-fmd-green mb-6 text-center text-2xl font-bold">FMD Server</h1>
-
-          <p className="mb-2 text-center text-sm text-gray-700 dark:text-gray-300">
-            {t('subtitle')}
+      <div className="login-content">
+        <section className="login-story">
+          <div className="eyebrow">
+            <span className="live-dot" />
+            Private device recovery
+          </div>
+          <h1>
+            Know where your
+            <br />
+            <span>device is.</span>
+          </h1>
+          <p className="login-lede">{t('subtitle')}</p>
+          <div className="story-points">
+            <div>
+              <span className="story-icon">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+              <div>
+                <strong>Encrypted by design</strong>
+                <small>Your location history is protected by a local key.</small>
+              </div>
+            </div>
+            <div>
+              <span className="story-icon">
+                <Zap className="h-4 w-4" />
+              </span>
+              <div>
+                <strong>Fast, direct commands</strong>
+                <small>Locate, ring or secure your phone from anywhere.</small>
+              </div>
+            </div>
+            <div>
+              <span className="story-icon">
+                <Smartphone className="h-4 w-4" />
+              </span>
+              <div>
+                <strong>Open source companion</strong>
+                <small>Works with the FMD Android app from F-Droid.</small>
+              </div>
+            </div>
+          </div>
+          <div className="story-orbit orbit-one" />
+          <div className="story-orbit orbit-two" />
+          <div className="story-grid" />
+        </section>
+        <section className="login-card">
+          <div className="login-card-top">
+            <div className="login-card-icon">
+              <LockKeyhole className="h-5 w-5" />
+            </div>
+            <span className="secure-chip">
+              <span className="live-dot" />
+              Secure sign in
+            </span>
+          </div>
+          <h2>{totpRequired ? 'Verify your identity' : 'Welcome back'}</h2>
+          <p className="login-card-copy">
+            {totpRequired
+              ? t('totp_prompt')
+              : 'Sign in to manage your device and view its latest signal.'}
           </p>
-          <p className="mb-8 text-center text-sm text-gray-700 dark:text-gray-300">
-            {t('setup_instruction_1')}{' '}
-            <a
-              href="https://f-droid.org/packages/de.nulide.findmydevice/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
-            >
-              {t('setup_instruction_2')}
-            </a>{' '}
-            {t('setup_instruction_3')}
-          </p>
-
-          {/* https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete */}
-          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+          {!totpRequired && (
+            <p className="login-instruction">
+              {t('setup_instruction_1')}{' '}
+              <a
+                href="https://f-droid.org/packages/de.nulide.findmydevice/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('setup_instruction_2')}
+              </a>{' '}
+              {t('setup_instruction_3')}
+            </p>
+          )}
+          <form onSubmit={(event) => void handleSubmit(event)} className="login-form">
             {!totpRequired ? (
               <>
+                <label className="login-label" htmlFor="fmd-username">
+                  Username
+                </label>
                 <Input
+                  id="fmd-username"
                   type="text"
                   value={fmdId}
-                  onChange={(e) => setFmdId(e.target.value)}
+                  onChange={(event) => setFmdId(event.target.value)}
                   placeholder={t('username_placeholder')}
                   autoComplete="username"
                   required
                 />
-
+                <label className="login-label" htmlFor="fmd-password">
+                  Password
+                </label>
                 <PasswordInput
+                  id="fmd-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder={t('password_placeholder')}
                   autoComplete="current-password"
                   required
                 />
-
                 <Checkbox
                   id="rememberMe"
                   label={t('remember_me')}
@@ -177,22 +221,23 @@ export const LoginForm = () => {
               </>
             ) : (
               <>
-                <p className="text-center text-sm text-gray-700 dark:text-gray-300">
-                  {t('totp_prompt')}
-                </p>
+                <label className="login-label" htmlFor="fmd-totp">
+                  Authenticator code
+                </label>
                 <Input
+                  id="fmd-totp"
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value)}
+                  onChange={(event) => setTotpCode(event.target.value)}
                   placeholder={t('totp_code_placeholder')}
                   autoFocus
                   required
                 />
                 <button
                   type="button"
-                  className="hover:text-fmd-green block w-full text-center text-sm text-gray-600 underline transition-colors duration-200 dark:text-gray-400"
+                  className="login-back"
                   onClick={() => {
                     setTotpRequired(false);
                     setTotpCode('');
@@ -203,24 +248,24 @@ export const LoginForm = () => {
                 </button>
               </>
             )}
-
-            <Button type="submit" disabled={loading} size="lg" className="w-full text-lg">
-              {loading ? t('logging_in') : t('log_in')}
+            <Button type="submit" disabled={loading} size="lg" className="login-submit">
+              {loading ? t('logging_in') : totpRequired ? 'Verify and continue' : t('log_in')}
+              <Sparkles className="h-4 w-4" />
             </Button>
           </form>
-
+          <div className="login-card-footer">
+            <span>
+              <span className="status-check">✓</span> No password leaves your browser
+            </span>
+            {version && <span className="version-label">v{version}</span>}
+          </div>
           <WebCryptoWarningModal />
-        </div>
+        </section>
       </div>
-
-      <footer className="pb-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          <a
-            href="https://fmd-foss.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
-          >
+      <footer className="login-footer">
+        <span>FMD OS · Open source device recovery</span>
+        <span>
+          <a href="https://fmd-foss.org" target="_blank" rel="noopener noreferrer">
             {t('project_website')}
           </a>
           <span>·</span>
@@ -228,31 +273,12 @@ export const LoginForm = () => {
             href="https://gitlab.com/fmd-foss/fmd-server/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
           >
             {t('source_code')}
           </a>
           <span>·</span>
-          <Link
-            to="/privacy"
-            className="hover:text-fmd-green text-gray-600 transition-colors duration-200 dark:text-gray-400"
-          >
-            {t('privacy_notice')}
-          </Link>
-        </div>
-
-        <div className="mt-2 h-4">
-          {version && (
-            <a
-              href="https://gitlab.com/fmd-foss/fmd-server/-/releases"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-fmd-green font-mono text-xs text-gray-600 transition-colors duration-200 dark:text-gray-400"
-            >
-              v{version}
-            </a>
-          )}
-        </div>
+          <Link to="/privacy">{t('privacy_notice')}</Link>
+        </span>
       </footer>
     </div>
   );

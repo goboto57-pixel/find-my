@@ -51,7 +51,7 @@ export const useStore = create<AppState>()(
       wasAuthRestoreTried: false,
       theme: 'system',
       units: 'metric',
-      language: 'en',
+      language: 'ru',
       pushUrl: null,
       locations: [],
       currentLocationIndex: 0,

@@ -1,0 +1,21 @@
+{
+  "name": "FMD Server",
+  "short_name": "FMD",
+  "description": "Поиск и управление устройствами.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4f9d5c",
+  "background_color": "#14201c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ]
+}

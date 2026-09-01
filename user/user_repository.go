@@ -318,7 +318,12 @@ var ErrAccountLocked = errors.New("too many attempts, account locked")
 var ErrTotpRequired = errors.New("2FA code required")
 var ErrTotpCodeInvalid = errors.New("2FA code invalid")
 
-func (u *UserRepository) RequestAccess(username string, innerPwHash string, sessionDurationSeconds uint64, remoteIp string, totpCode string) (*FMDUser, *AccessToken, error) {
+func (u *UserRepository) RequestAccess(username string, innerPwHash string, sessionDurationSeconds uint64, remoteIp string, totpCodes ...string) (*FMDUser, *AccessToken, error) {
+	totpCode := ""
+	if len(totpCodes) > 0 {
+		totpCode = totpCodes[0]
+	}
+
 	user, err := u.UB.GetByName(username)
 	if err != nil {
 		return nil, nil, ErrNotFound

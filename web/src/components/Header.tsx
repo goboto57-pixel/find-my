@@ -1,5 +1,6 @@
-import { Settings, ChevronDown, LogOut, Info } from 'lucide-react';
+import { ChevronDown, CircleHelp, LogOut, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useStore } from '@/lib/store';
-import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -20,38 +20,44 @@ export const Header = ({ onSettingsClick, onAccountInfoClick }: HeaderProps) => 
   const { t } = useTranslation('common');
 
   return (
-    <header className="dark:bg-fmd-dark flex items-center justify-between border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-800">
-      <Link to="/" className="ms-2 flex items-center gap-2">
-        <img src="./icon.svg" alt="FMD" width="24" height="24" className="text-fmd-green" />
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">FMD Server</h1>
+    <header className="topbar">
+      <Link to="/" className="topbar-mobile-brand" aria-label="FMD OS">
+        <span className="brand-mark small">
+          <img src="./icon.svg" alt="" width="18" height="18" />
+        </span>
+        <span>
+          FMD <em>OS</em>
+        </span>
       </Link>
+      <div className="topbar-meta">
+        <span className="topbar-status">
+          <span className="live-dot" />
+          Secure session
+        </span>
+        <span className="topbar-divider" />
+        Encrypted locally
+      </div>
       {userData && (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onSettingsClick}
-            title={t('settings')}
-            className="rounded-lg"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-
+        <div className="topbar-account">
+          <button className="topbar-help" title="Help">
+            <CircleHelp className="h-4 w-4" />
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <div className="text-right">
-                  <div className="text font-semibold">{userData.fmdId}</div>
-                </div>
+              <Button variant="ghost" size="sm" className="account-trigger">
+                <span className="avatar">
+                  <UserRound className="h-4 w-4" />
+                </span>
+                <span className="account-copy">
+                  <strong>{userData.fmdId}</strong>
+                  <small>FMD account</small>
+                </span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-1000 w-40 bg-white dark:bg-gray-800">
-              <DropdownMenuItem onClick={() => void onAccountInfoClick()}>
-                <Info className="mr-2 h-4 w-4" />
-                {t('account_info')}
-              </DropdownMenuItem>
-
+            <DropdownMenuContent align="end" className="account-menu z-1000">
+              <DropdownMenuItem onClick={onAccountInfoClick}>{t('account_info')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={onSettingsClick}>{t('settings')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => void logout()}>
                 <LogOut className="mr-2 h-4 w-4" />
                 {t('logout')}
