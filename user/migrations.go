@@ -81,8 +81,8 @@ func migrateDatabase(db *gorm.DB) {
 		migrateToV2Passwords(db)
 	}
 
-	if actualVersion < 4 {
-		err := runMigration("000004_rename_user_id_name", db)
+	if actualVersion < 4 && db.Migrator().HasColumn(&FMDUser{}, "UID") {
+		err := runDialectMigration("000004_rename_user_id_name", dialect, db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
 			return
