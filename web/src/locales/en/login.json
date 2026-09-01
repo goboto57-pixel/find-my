@@ -1,0 +1,18 @@
+{
+  "subtitle": "This platform is for locating and controlling your devices.",
+  "setup_instruction_1": "To get started,",
+  "setup_instruction_2": "install the FMD Android app",
+  "setup_instruction_3": "on your mobile device. Then use the app to register an account on FMD Server.",
+  "username_placeholder": "Username",
+  "password_placeholder": "Password",
+  "remember_me": "Remember me",
+  "log_in": "Log in",
+  "logging_in": "Logging in…",
+  "login_slow": "Password hashing appears to be slow. This usually happens when JavaScript JIT is disabled in your browser. Either enable JIT, or be patient and wait up to 5 minutes.",
+  "project_website": "Project Website",
+  "source_code": "Source Code",
+  "privacy_notice": "Privacy Notice",
+  "totp_prompt": "Enter the 6-digit code from your authenticator app.",
+  "totp_code_placeholder": "6-digit code",
+  "totp_back": "Back"
+}

@@ -1,0 +1,44 @@
+{
+  "title": "Paramètres",
+  "general": "Général",
+  "about": "À propos",
+  "theme": "Thème",
+  "theme_dark": "Sombre",
+  "theme_light": "Clair",
+  "theme_system": "Système",
+  "units": "Unités",
+  "units_metric": "Métrique",
+  "units_imperial": "Impériale",
+  "account": "Compte & Données",
+  "export_data": "Exporter les données",
+  "export_data_loading_message": "Téléchargement des données. Cela peut prendre du temps, notamment si vous avez de nombreuses images.",
+  "delete_account": "Supprimer le compte",
+  "delete_account_title": "Supprimer le compte ?",
+  "delete_account_description": "Votre compte et toutes ses données seront définitivement supprimés du serveur. Cela ne peut pas être annulé.",
+  "language": {
+    "title": "Langue",
+    "en": "Anglais",
+    "et": "Estonien",
+    "de": "Allemand",
+    "fr": "Français",
+    "nl": "Néerlandais",
+    "pt-BR": "Portugais (Brésil)",
+    "sl": "Slovène",
+    "zh-Hant": "Chinois (Traditionnel)",
+    "el": "Grec",
+    "zh-Hans": "Chinois (simplifié)"
+  },
+  "about_text": "Un serveur pour communiquer avec l'application Android FMD, pour localiser et contrôler vos appareils.",
+  "delete_locations": {
+    "button": "Supprimer les localisations",
+    "title": "Supprimer toutes les localisations ?",
+    "description": "Toutes les localisations seront supprimées définitivement du serveur. Cette action est irréversible.",
+    "success": "Localisations supprimées avec succès."
+  },
+  "delete_pictures": {
+    "title": "Supprimer toutes les photos ?",
+    "description": "Toutes les photos seront définitivement supprimées du serveur. Cette action est irréversible.",
+    "success": "Photos supprimées avec succès.",
+    "button": "Supprimer les photos"
+  }
+}

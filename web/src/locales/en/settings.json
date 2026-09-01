@@ -1,0 +1,61 @@
+{
+  "general": "General",
+  "about": "About",
+  "theme": "Theme",
+  "theme_dark": "Dark",
+  "theme_light": "Light",
+  "theme_system": "System",
+  "units": "Units",
+  "units_metric": "Metric",
+  "units_imperial": "Imperial",
+  "account": "Account & Data",
+  "export_data": "Export data",
+  "export_data_loading_message": "Downloading data. This can take some time, especially if you have many pictures.",
+  "delete_locations": {
+    "button": "Delete locations",
+    "title": "Delete all locations?",
+    "description": "All locations will be permanently deleted from the server. This cannot be undone.",
+    "success": "Locations successfully deleted."
+  },
+  "delete_pictures": {
+    "button": "Delete photos",
+    "title": "Delete all photos?",
+    "description": "All photos will be permanently deleted from the server. This cannot be undone.",
+    "success": "Photos successfully deleted."
+  },
+  "delete_account": "Delete account",
+  "delete_account_title": "Delete account?",
+  "delete_account_description": "Your account and all data will be permanently deleted from the server. This cannot be undone.",
+  "language": {
+    "title": "Language"
+  },
+  "about_text": "A server to communicate with the FMD Android app, to locate and control your devices.",
+  "security": {
+    "tab": "Security",
+    "device_meta": "Device label",
+    "display_name_placeholder": "Display name (e.g. \"My Phone\")",
+    "tags_placeholder": "Tags, comma-separated (e.g. \"work, pixel\")",
+    "save": "Save",
+    "meta_saved": "Saved.",
+    "totp_title": "Two-factor authentication",
+    "totp_status_enabled": "2FA is enabled on this account.",
+    "totp_enable": "Enable 2FA",
+    "totp_disable": "Disable 2FA",
+    "totp_disable_title": "Disable two-factor authentication?",
+    "totp_disable_description": "Your account will only be protected by your password. This cannot be undone without setting 2FA up again.",
+    "totp_scan_instruction": "Scan this QR code with your authenticator app, then enter the 6-digit code it shows to confirm.",
+    "totp_code_placeholder": "6-digit code",
+    "totp_confirm": "Confirm",
+    "totp_enabled": "2FA enabled.",
+    "totp_disabled": "2FA disabled.",
+    "audit_log": "Recent account activity",
+    "audit_log_empty": "No recent activity.",
+    "loading": "Loading…",
+    "audit_events": {
+      "login_success": "Successful login",
+      "login_failed": "Failed login attempt",
+      "command_sent": "Command sent to device",
+      "password_changed": "Password changed"
+    }
+  }
+}

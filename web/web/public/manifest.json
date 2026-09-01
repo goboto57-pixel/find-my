@@ -1,0 +1,21 @@
+{
+  "name": "FMD Server",
+  "short_name": "FMD",
+  "description": "Locate and control your devices.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4cb050",
+  "background_color": "#232323",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ]
+}

@@ -1,0 +1,608 @@
+package backend
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"fmd-server/user"
+
+	"github.com/rs/zerolog/log"
+)
+
+const ERR_ACCESS_TOKEN_INVALID = "Access token not valid"
+
+// StatusTotpRequired is returned by requestAccess when the account has 2FA
+// enabled and the request didn't include a (valid) TotpCode. 428 Precondition
+// Required is the semantically closest standard HTTP status for this case.
+const StatusTotpRequired = http.StatusPreconditionRequired
+
+type registrationData struct {
+	Salt              string
+	HashedPassword    string
+	PubKey            string
+	PrivKey           string
+	RequestedUsername string
+	RegistrationToken string
+}
+
+type passwordUpdateData struct {
+	IDT            string
+	Salt           string
+	HashedPassword string
+	PrivKey        string
+}
+
+// This is historically grown, and was originally a DataPackage
+type loginData struct {
+	IDT                    string
+	PasswordHash           string `json:"Data"`
+	SessionDurationSeconds uint64
+	// TotpCode is optional, and only required when the account has 2FA enabled.
+	// If omitted (or wrong) on such an account, requestAccess responds with
+	// StatusTotpRequired (428) so the client can prompt for the code and retry.
+	TotpCode string
+}
+
+// suboptimal naming for backwards compatibility
+type commandData struct {
+	IDT      string // access token
+	Data     string // plaintext command
+	UnixTime uint64 // unix time in milliseconds
+	CmdSig   string // base64-encoded signature over "UnixTime:Data"
+}
+
+// universal package for string transfer
+// IDT = DeviceID or AccessToken
+// If both will be send. ID is always IDT
+type DataPackage struct {
+	IDT  string
+	Data string
+}
+
+type TileServeUrlResponse struct {
+	TileServerUrl string
+}
+
+// ------- Location -------
+
+func getLocation(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	index, _ := strconv.Atoi(request.Data)
+	if index == -1 {
+		index = uio.GetLocationSize(user) - 1
+	}
+
+	data, err := uio.GetLocation(user, index)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write([]byte(fmt.Sprint(string(data))))
+}
+
+func getAllLocations(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+	data := uio.GetAllLocations(user)
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "Failed to export data", http.StatusConflict)
+		return
+	}
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write([]byte(fmt.Sprint(string(jsonData))))
+}
+
+func deleteAllLocations(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	uio.DeleteAllLocationsV1(user)
+	w.WriteHeader(http.StatusOK)
+}
+
+func postLocation(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	toStore := DataPackage{Data: request.Data} // don't copy the IDT (access token)
+	locationAsString, _ := json.MarshalIndent(toStore, "", " ")
+	uio.AddLocation(user, string(locationAsString))
+	w.WriteHeader(http.StatusOK)
+}
+
+func getLocationDataSize(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	size := uio.GetLocationSize(user)
+
+	dataSize := DataPackage{Data: strconv.Itoa(size)}
+	result, _ := json.Marshal(dataSize)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+// ------- Picture -------
+
+func getPicture(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	index, _ := strconv.Atoi(request.Data)
+	if index == -1 {
+		index = uio.GetPictureSize(user) - 1
+	}
+
+	data, err := uio.GetPicture(user, index)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set(HEADER_CONTENT_TYPE, "text/plain")
+	w.Write([]byte(fmt.Sprint(string(data))))
+}
+
+func getAllPictures(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+	data := uio.GetAllPictures(user)
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "Failed to export data", http.StatusConflict)
+		return
+	}
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write([]byte(fmt.Sprint(string(jsonData))))
+}
+
+func deleteAllPictures(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	uio.DeleteAllPicturesV1(user)
+	w.WriteHeader(http.StatusOK)
+}
+
+func getPictureSize(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	highest := uio.GetPictureSize(user)
+
+	dataSize := DataPackage{Data: strconv.Itoa(highest)}
+	result, _ := json.Marshal(dataSize)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+func postPicture(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	picture := data.Data
+	uio.AddPicture(user, picture)
+	w.WriteHeader(http.StatusOK)
+}
+
+// ------- Public/Private Keys -------
+
+func getPrivKey(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	dataReply := DataPackage{IDT: request.IDT, Data: uio.GetPrivateKey(user)}
+	result, _ := json.Marshal(dataReply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+func getPubKey(w http.ResponseWriter, r *http.Request) {
+	var request DataPackage
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(request.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	dataReply := DataPackage{IDT: request.IDT, Data: uio.GetPublicKey(user)}
+	result, _ := json.Marshal(dataReply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+// ------- Commands -------
+
+func getCommand(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+	cmd, time, sig := uio.GetCommandToUser(user)
+
+	// commandAsString may be an empty string, that's fine
+	reply := commandData{IDT: data.IDT, Data: cmd, UnixTime: time, CmdSig: sig}
+	result, _ := json.Marshal(reply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write([]byte(result))
+}
+
+func postCommand(w http.ResponseWriter, r *http.Request) {
+	var data commandData
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+	uio.SetCommandToUser(user, data.Data, data.UnixTime, data.CmdSig)
+	// Literal instead of user.AuditCommandSent: the "user" package is shadowed
+	// by the local variable "user" (the FMDUser) in this function.
+	uio.LogAuditEvent(user, "command_sent", getRemoteIp(r))
+	w.WriteHeader(http.StatusOK)
+}
+
+// ------- Push -------
+
+func getPushUrl(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, "Meeep!, Error - getIsPushRegistered 1", http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	url := uio.GetPushUrl(user)
+	w.Write([]byte(fmt.Sprint(url)))
+}
+
+func postPushUrl(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	uio.SetPushUrl(user, data.Data)
+	w.WriteHeader(http.StatusOK)
+}
+
+// ------- Authentication, Login -------
+
+func requestSalt(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	if !user.IsUsernameValid(data.IDT) {
+		http.Error(w, "Invalid username", http.StatusBadRequest)
+		return
+	}
+	salt := uio.GetSalt(data.IDT)
+	dataReply := DataPackage{IDT: data.IDT, Data: salt}
+	result, _ := json.Marshal(dataReply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+
+}
+
+func requestAccess(w http.ResponseWriter, r *http.Request) {
+	var data loginData
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	if !user.IsUsernameValid(data.IDT) {
+		http.Error(w, "Invalid username", http.StatusBadRequest)
+		return
+	}
+
+	_, accessToken, err := uio.RequestAccess(data.IDT, data.PasswordHash, data.SessionDurationSeconds, getRemoteIp(r), data.TotpCode)
+
+	if err == user.ErrNotFound {
+		http.Error(w, "Account not found", http.StatusNotFound)
+		return
+	}
+	if err == user.ErrAccountLocked {
+		http.Error(w, "Account is locked", http.StatusLocked)
+		return
+	}
+	if err == user.ErrTotpRequired || err == user.ErrTotpCodeInvalid {
+		http.Error(w, "2FA code required", StatusTotpRequired)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
+	accessTokenReply := DataPackage{IDT: data.IDT, Data: accessToken.Token}
+	result, _ := json.Marshal(accessTokenReply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+func postPassword(w http.ResponseWriter, r *http.Request) {
+	var data passwordUpdateData
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	uio.UpdateUserPassword(user, data.PrivKey, data.Salt, data.HashedPassword)
+	// Literal instead of user.AuditPasswordChanged: "user" package is shadowed here too.
+	uio.LogAuditEvent(user, "password_changed", getRemoteIp(r))
+
+	dataReply := DataPackage{IDT: data.IDT, Data: "true"}
+	result, _ := json.Marshal(dataReply)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+// ------- (De-) Registration -------
+
+func deleteDevice(w http.ResponseWriter, r *http.Request) {
+	var data DataPackage
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+	user, err := uio.CheckAccessTokenAndGetUser(data.IDT)
+	if err != nil {
+		http.Error(w, ERR_ACCESS_TOKEN_INVALID, http.StatusUnauthorized)
+		return
+	}
+
+	err = uio.DeleteUser(user)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete account: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+type createDeviceHandler struct {
+	RegistrationToken string
+}
+
+type createDeviceResponse struct {
+	DeviceId string // username, named differently for historic reasons
+}
+
+func (h createDeviceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var reg registrationData
+	err := json.NewDecoder(r.Body).Decode(&reg)
+	if err != nil {
+		http.Error(w, ERR_JSON_INVALID, http.StatusBadRequest)
+		return
+	}
+
+	if h.RegistrationToken != "" && h.RegistrationToken != reg.RegistrationToken {
+		log.Error().Msg("invalid RegistrationToken")
+		http.Error(w, "Registration Token not valid", http.StatusUnauthorized)
+		return
+	}
+
+	username, err := uio.CreateNewUser(reg.PrivKey, reg.PubKey, reg.Salt, reg.HashedPassword, reg.RequestedUsername)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to create account: %s", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	responseData := createDeviceResponse{DeviceId: username}
+	result, _ := json.Marshal(responseData)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+// ------- Tile Server URL -------
+
+type tileServerUrlHandler struct {
+	tileServerUrl string
+}
+
+func (h tileServerUrlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	response := TileServeUrlResponse{TileServerUrl: h.tileServerUrl}
+	result, _ := json.Marshal(response)
+	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)
+	w.Write(result)
+}
+
+// ------- Main Web Request Handling -------
+
+func mainLocation(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPut:
+		getLocation(w, r)
+	case http.MethodPost:
+		postLocation(w, r)
+	}
+}
+
+func mainPicture(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPut:
+		getPicture(w, r)
+	case http.MethodPost:
+		postPicture(w, r)
+	}
+}
+
+func mainCommand(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPut:
+		getCommand(w, r)
+	case http.MethodPost:
+		postCommand(w, r)
+	}
+}
+
+func mainPushUrl(w http.ResponseWriter, r *http.Request) {
+	// This is inverted, and not nice, but it has grown historically...
+	// Ideally the HTTP methods would be GET and PUT (or possibly POST).
+	// But the app is using PUT to set the URL, so we need to keep that.
+	// And we cannot have a body in GET requests, so we need to use POST.
+	switch r.Method {
+	case http.MethodPost:
+		getPushUrl(w, r)
+	case http.MethodPut:
+		postPushUrl(w, r)
+	}
+}
+
+type mainDeviceHandler struct {
+	createDeviceHandler createDeviceHandler
+}
+
+func (h mainDeviceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		deleteDevice(w, r)
+	case http.MethodPut:
+		h.createDeviceHandler.ServeHTTP(w, r)
+	}
+}

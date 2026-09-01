@@ -1,0 +1,47 @@
+# Render Blueprint for FMD Server (backend + web panel), with managed Postgres.
+#
+# Usage:
+#   1. Push this repo to GitHub/GitLab.
+#   2. In Render: New -> Blueprint -> select this repo. Render reads this file
+#      automatically and provisions both services below.
+#   3. First deploy takes a few minutes (it compiles the Go binary and builds
+#      the React web panel inside the Docker image).
+#
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: fmd-postgres
+    databaseName: fmd
+    user: fmd
+    plan: free # bump to "starter" or higher for production use
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: fmd-server
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free # bump for production; free plan spins down when idle
+    healthCheckPath: /
+    envVars:
+      # Render injects PORT automatically; FMD_PORTINSECURE tells FMD to
+      # listen on it. Render terminates TLS for you, so PortSecure stays off.
+      - key: FMD_PORTINSECURE
+        fromService:
+          type: web
+          name: fmd-server
+          property: port
+      - key: FMD_PORTSECURE
+        value: ""
+      - key: FMD_DATABASEURL
+        fromDatabase:
+          name: fmd-postgres
+          property: connectionString
+      - key: FMD_REGISTRATIONTOKEN
+        generateValue: true # remove/blank this if you want open registration
+      - key: FMD_MAXSAVEDLOC
+        value: "500"
+      - key: FMD_MAXSAVEDPIC
+        value: "10"
+      - key: FMD_TILESERVERURL
+        value: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
