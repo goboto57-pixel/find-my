@@ -82,10 +82,15 @@ func migrateDatabase(db *gorm.DB) {
 	}
 
 	if actualVersion < 4 {
-		err := runMigration("000004_rename_user_id_name", db)
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
-			return
+		// Some existing PostgreSQL databases may already have completed this
+		// rename while their version marker was not updated. Avoid failing on a
+		// second run when the legacy uid column no longer exists.
+		if db.Migrator().HasColumn(&FMDUser{}, "uid") {
+			err := runMigration("000004_rename_user_id_name", db)
+			if err != nil {
+				log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
+				return
+			}
 		}
 	}
 
