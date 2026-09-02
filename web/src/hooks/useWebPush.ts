@@ -61,7 +61,7 @@ export function useWebPush() {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: urlBase64ToUint8Array(publicKey).buffer as ArrayBuffer,
       });
 
       const keys = subscriptionKeys(subscription);

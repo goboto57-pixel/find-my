@@ -243,7 +243,7 @@ export const decryptShareLinkPayload = async (
   const ciphertext = combined.slice(12);
 
   const rawKey = fromBase64Url(keyBase64Url);
-  const key = await crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, [
+  const key = await crypto.subtle.importKey('raw', rawKey as BufferSource, { name: 'AES-GCM' }, false, [
     'decrypt',
   ]);
 
