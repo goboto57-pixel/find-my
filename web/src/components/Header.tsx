@@ -1,4 +1,5 @@
-import { Settings, ChevronDown, LogOut, Info, Smartphone } from 'lucide-react';
+import { Settings, ChevronDown, LogOut, Info, Smartphone, Share2, MapPinned } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useStore } from '@/lib/store';
 import { Link } from 'react-router-dom';
+import { ShareLocationModal } from '@/components/modals/ShareLocationModal';
+import { GeofenceModal } from '@/components/modals/GeofenceModal';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -19,6 +22,8 @@ interface HeaderProps {
 export const Header = ({ onSettingsClick, onAccountInfoClick, onAccountClick }: HeaderProps) => {
   const { userData, logout } = useStore();
   const { t } = useTranslation('common');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showGeofenceModal, setShowGeofenceModal] = useState(false);
 
   return (
     <header className="bg-background/90 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-50 flex items-center justify-between border-b border-border px-4 py-3 backdrop-blur-md">
@@ -30,6 +35,26 @@ export const Header = ({ onSettingsClick, onAccountInfoClick, onAccountClick }: 
       </Link>
       {userData && (
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setShowShareModal(true)}
+            title={t('share_location')}
+            className="rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setShowGeofenceModal(true)}
+            title={t('geofence_title')}
+            className="rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            <MapPinned className="h-5 w-5" />
+          </Button>
+
           <Button
             variant="ghost"
             size="icon-sm"
@@ -76,6 +101,8 @@ export const Header = ({ onSettingsClick, onAccountInfoClick, onAccountClick }: 
           </DropdownMenu>
         </div>
       )}
+      <ShareLocationModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
+      <GeofenceModal isOpen={showGeofenceModal} onClose={() => setShowGeofenceModal(false)} />
     </header>
   );
 };

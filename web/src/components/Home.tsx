@@ -8,15 +8,27 @@ import { AccountModal } from '@/components/modals/AccountModal';
 import { SettingsModal } from '@/components/modals/SettingsModal';
 import { Header } from '@/components/Header';
 import { Spinner } from '@/components/ui/spinner';
+import { LiveTrackingToggle } from '@/components/LiveTrackingToggle';
 import { apiService } from '@/lib/apiService';
 import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const second = 1000;
 const minute = 60 * 1000;
 
+// How often a fresh "locate" command is sent to the device while
+// real-time tracking is active.
+const LIVE_TRACKING_LOCATE_INTERVAL = 15 * second;
+// How often the browser re-checks for a newly uploaded location.
+const LIVE_TRACKING_POLL_INTERVAL = 5 * second;
+// Safety cap so an accidentally-forgotten toggle doesn't drain the
+// phone's battery indefinitely.
+const LIVE_TRACKING_MAX_DURATION = 30 * minute;
+
 const Home = () => {
   const { isLoggedIn, userData, wasAuthRestoreTried, locations } = useStore();
+  const { t: tDashboard } = useTranslation('dashboard');
 
   const [photosOpen, setPhotosOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -24,6 +36,9 @@ const Home = () => {
   const [accountOpen, setAccountOpen] = useState(false);
   const [lastLocateTime, setLastLocateTime] = useState<number | null>(null);
   const [lastLocationsFetchedTime, setLastLocationsFetchedTime] = useState<number | null>(null);
+
+  const [liveTracking, setLiveTracking] = useState(false);
+  const [secondsToNextUpdate, setSecondsToNextUpdate] = useState<number | null>(null);
 
   const fetchLocations = async (showLoading = true) => {
     if (!userData) return;
@@ -112,6 +127,54 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, userData, lastLocationsFetchedTime]);
 
+  // Real-time tracking: while enabled, repeatedly ask the device to
+  // locate itself and refresh the map, on top of the normal polling above.
+  useEffect(() => {
+    if (!liveTracking || !isLoggedIn || !userData) return;
+
+    let cancelled = false;
+    let countdownId: NodeJS.Timeout;
+
+    const sendLocate = async () => {
+      try {
+        await apiService.sendCommand('locate gps');
+        setLastLocateTime(Date.now());
+      } catch {
+        // Non-fatal: the next scheduled attempt will retry.
+      }
+    };
+
+    void sendLocate();
+    const locateId = setInterval(() => void sendLocate(), LIVE_TRACKING_LOCATE_INTERVAL);
+
+    const pollId = setInterval(() => {
+      if (!document.hidden) void fetchLocations(false);
+    }, LIVE_TRACKING_POLL_INTERVAL);
+
+    // Countdown shown to the user until the next locate request.
+    let remaining = LIVE_TRACKING_LOCATE_INTERVAL / second;
+    setSecondsToNextUpdate(remaining);
+    countdownId = setInterval(() => {
+      remaining = remaining <= 1 ? LIVE_TRACKING_LOCATE_INTERVAL / second : remaining - 1;
+      if (!cancelled) setSecondsToNextUpdate(remaining);
+    }, second);
+
+    const autoOffId = setTimeout(() => {
+      setLiveTracking(false);
+      toast.info(tDashboard('live_tracking.auto_off'));
+    }, LIVE_TRACKING_MAX_DURATION);
+
+    return () => {
+      cancelled = true;
+      clearInterval(locateId);
+      clearInterval(pollId);
+      clearInterval(countdownId);
+      clearTimeout(autoOffId);
+      setSecondsToNextUpdate(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveTracking, isLoggedIn, userData]);
+
   if (!wasAuthRestoreTried) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/40">
@@ -147,7 +210,12 @@ const Home = () => {
       <div className="flex h-[calc(100vh-3.6rem)] flex-col bg-muted/40 text-foreground">
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:overflow-hidden">
           {userData && (
-            <div className="order-2 w-full lg:order-1 lg:w-100 lg:shrink-0">
+            <div className="order-2 flex w-full flex-col gap-4 lg:order-1 lg:w-100 lg:shrink-0">
+              <LiveTrackingToggle
+                active={liveTracking}
+                onToggle={setLiveTracking}
+                secondsToNextUpdate={secondsToNextUpdate}
+              />
               <DevicePanel
                 onViewPhotos={() => setPhotosOpen(true)}
                 onLocateCommand={() => setLastLocateTime(Date.now())}

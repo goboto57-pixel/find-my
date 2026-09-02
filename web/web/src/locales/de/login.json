@@ -1,0 +1,15 @@
+{
+  "subtitle": "Diese Plattform dient zum Lokalisieren und Steuern deiner Geräte.",
+  "setup_instruction_1": "Um zu beginnen,",
+  "setup_instruction_2": "installiere die FMD-Android-App",
+  "setup_instruction_3": "auf deinem Mobilgerät. Verwende dann die App, um ein Konto auf FMD Server zu registrieren.",
+  "username_placeholder": "Benutzername",
+  "password_placeholder": "Passwort",
+  "remember_me": "Login merken",
+  "log_in": "Anmelden",
+  "logging_in": "Anmeldung läuft…",
+  "project_website": "Projekt-Webseite",
+  "source_code": "Quellcode",
+  "privacy_notice": "Datenschutz",
+  "login_slow": "Das Passwort-Hashing scheint langsam zu sein. Dies passiert normalerweise, wenn JavaScript JIT in deinem Browser deaktiviert ist. Aktiviere entweder JIT oder gedulde dich und warte bis zu 5 Minuten."
+}

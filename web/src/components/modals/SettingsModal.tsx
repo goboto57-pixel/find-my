@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { WebPushToggle } from '@/components/WebPushToggle';
 import { toast } from 'sonner';
 import { apiService } from '@/lib/apiService';
 import { useStore, logout, type UnitSystem } from '@/lib/store';
@@ -55,21 +56,28 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     { event: string; remoteIp: string; createdAt: number }[] | null
   >(null);
 
+  const [commandLog, setCommandLog] = useState<
+    | { command: string; status: string; sentAt: number; deliveredAt: number; resolvedAt: number }[]
+    | null
+  >(null);
+
   const loadSecurityTab = () => {
     if (metaLoaded) return;
     setMetaLoaded(true);
 
     void (async () => {
       try {
-        const [meta, enabled, log] = await Promise.all([
+        const [meta, enabled, log, cmdLog] = await Promise.all([
           apiService.getDeviceMeta(),
           apiService.getTotpStatus(),
           apiService.getAuditLog(),
+          apiService.getCommandLog(),
         ]);
         setDisplayName(meta.displayName);
         setTags(meta.tags);
         setTotpEnabled(enabled);
         setAuditLog(log);
+        setCommandLog(cmdLog);
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Failed to load security settings');
       }
@@ -231,6 +239,10 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             </div>
 
             <div>
+              <h3 className="text-fmd-green mb-3 font-semibold">{t('notifications')}</h3>
+              <WebPushToggle />            </div>
+
+            <div>
               <h3 className="text-fmd-green mb-3 font-semibold">{t('units')}</h3>
               <ToggleGroup
                 type="single"
@@ -372,6 +384,41 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                       <span>{t(`security.audit_events.${entry.event}`, entry.event)}</span>
                       <span className="text-muted-foreground">
                         {new Date(entry.createdAt * 1000).toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-fmd-green mb-3 font-semibold">{t('security.command_log')}</h3>
+              {!commandLog && (
+                <p className="text-sm text-muted-foreground">{t('security.loading')}</p>
+              )}
+              {commandLog && commandLog.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {t('security.command_log_empty')}
+                </p>
+              )}
+              {commandLog && commandLog.length > 0 && (
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  {commandLog.map((entry, i) => (
+                    <li key={i} className="flex justify-between gap-4 border-b border-border py-1">
+                      <span>{entry.command}</span>
+                      <span
+                        className={
+                          entry.status === 'failed'
+                            ? 'text-destructive'
+                            : entry.status === 'executed'
+                              ? 'text-fmd-green'
+                              : 'text-muted-foreground'
+                        }
+                      >
+                        {t(`security.command_statuses.${entry.status}`, entry.status)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {new Date(entry.sentAt * 1000).toLocaleString()}
                       </span>
                     </li>
                   ))}

@@ -36,6 +36,18 @@ export const ENDPOINTS = {
   VERSION: `${API_BASE}/version`,
   DEVICE_META: `${API_BASE}/deviceMeta`,
   AUDIT_LOG: `${API_BASE}/auditLog`,
+  COMMAND_LOG: `${API_BASE}/commandLog`,
+  SHARE_CREATE: `${API_BASE}/share`,
+  SHARE_LIST: `${API_BASE}/share/list`,
+  SHARE_REVOKE: `${API_BASE}/share/revoke`,
+  SHARE_PUBLIC: `${API_BASE}/share/public`, // + /{token}, unauthenticated
+  WEBPUSH_VAPID_KEY: `${API_BASE}/webpush/vapidPublicKey`,
+  WEBPUSH_SUBSCRIBE: `${API_BASE}/webpush/subscribe`,
+  WEBPUSH_UNSUBSCRIBE: `${API_BASE}/webpush/unsubscribe`,
+  GEOFENCE_CREATE: `${API_BASE}/geofence`,
+  GEOFENCE_LIST: `${API_BASE}/geofence/list`,
+  GEOFENCE_ENABLED: `${API_BASE}/geofence/enabled`,
+  GEOFENCE_DELETE: `${API_BASE}/geofence/delete`,
   TOTP_SETUP: `${API_BASE}/totp/setup`,
   TOTP_CONFIRM: `${API_BASE}/totp/confirm`,
   TOTP_DISABLE: `${API_BASE}/totp/disable`,
@@ -254,6 +266,167 @@ export class ApiV1Service extends BaseApiService {
       event: e.Event,
       remoteIp: e.RemoteIp,
       createdAt: e.CreatedAt,
+    }));
+  }
+
+  // ------- Feature 3: time-limited public share links -------
+
+  async createShareLink(
+    encryptedPayload: string,
+    durationSeconds: number
+  ): Promise<{ token: string; expiresAt: number }> {
+    const { userData } = useStore.getState();
+    const response = await requestObject<{ Token: string; ExpiresAt: number }>(
+      ENDPOINTS.SHARE_CREATE,
+      HTTP.POST,
+      { IDT: userData!.sessionToken, EncryptedPayload: encryptedPayload, DurationSeconds: durationSeconds }
+    );
+    return { token: response.Token, expiresAt: response.ExpiresAt };
+  }
+
+  async listShareLinks(): Promise<{ token: string; expiresAt: number; createdAt: number }[]> {
+    const { userData } = useStore.getState();
+    const response = await requestObject<{
+      Links: { Token: string; ExpiresAt: number; CreatedAt: number }[];
+    }>(ENDPOINTS.SHARE_LIST, HTTP.POST, { IDT: userData!.sessionToken });
+    return response.Links.map((l) => ({
+      token: l.Token,
+      expiresAt: l.ExpiresAt,
+      createdAt: l.CreatedAt,
+    }));
+  }
+
+  async revokeShareLink(token: string): Promise<void> {
+    const { userData } = useStore.getState();
+    await requestObject(ENDPOINTS.SHARE_REVOKE, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Token: token,
+    });
+  }
+
+  // ------- Feature 10: web push -------
+
+  async getWebPushVapidPublicKey(): Promise<string> {
+    const response = await fetch(ENDPOINTS.WEBPUSH_VAPID_KEY);
+    if (!response.ok) throw new Error('Failed to fetch VAPID public key');
+    const data = (await response.json()) as { PublicKey: string };
+    return data.PublicKey;
+  }
+
+  async subscribeWebPush(endpoint: string, p256dh: string, auth: string): Promise<void> {
+    const { userData } = useStore.getState();
+    await requestObject(ENDPOINTS.WEBPUSH_SUBSCRIBE, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Endpoint: endpoint,
+      P256dh: p256dh,
+      Auth: auth,
+    });
+  }
+
+  async unsubscribeWebPush(endpoint: string): Promise<void> {
+    const { userData } = useStore.getState();
+    await requestObject(ENDPOINTS.WEBPUSH_UNSUBSCRIBE, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Endpoint: endpoint,
+    });
+  }
+
+  // ------- Feature 1: geofencing -------
+
+  async createGeofence(
+    name: string,
+    lat: number,
+    lon: number,
+    radiusMeters: number
+  ): Promise<{ id: number; name: string; lat: number; lon: number; radiusMeters: number; enabled: boolean }> {
+    const { userData } = useStore.getState();
+    const response = await requestObject<{
+      Id: number;
+      Name: string;
+      Lat: number;
+      Lon: number;
+      RadiusMeters: number;
+      Enabled: boolean;
+    }>(ENDPOINTS.GEOFENCE_CREATE, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Name: name,
+      Lat: lat,
+      Lon: lon,
+      RadiusMeters: radiusMeters,
+    });
+    return {
+      id: response.Id,
+      name: response.Name,
+      lat: response.Lat,
+      lon: response.Lon,
+      radiusMeters: response.RadiusMeters,
+      enabled: response.Enabled,
+    };
+  }
+
+  async listGeofences(): Promise<
+    { id: number; name: string; lat: number; lon: number; radiusMeters: number; enabled: boolean }[]
+  > {
+    const { userData } = useStore.getState();
+    const response = await requestObject<{
+      Fences: {
+        Id: number;
+        Name: string;
+        Lat: number;
+        Lon: number;
+        RadiusMeters: number;
+        Enabled: boolean;
+      }[];
+    }>(ENDPOINTS.GEOFENCE_LIST, HTTP.POST, { IDT: userData!.sessionToken });
+    return response.Fences.map((f) => ({
+      id: f.Id,
+      name: f.Name,
+      lat: f.Lat,
+      lon: f.Lon,
+      radiusMeters: f.RadiusMeters,
+      enabled: f.Enabled,
+    }));
+  }
+
+  async setGeofenceEnabled(id: number, enabled: boolean): Promise<void> {
+    const { userData } = useStore.getState();
+    await requestObject(ENDPOINTS.GEOFENCE_ENABLED, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Id: id,
+      Enabled: enabled,
+    });
+  }
+
+  async deleteGeofence(id: number): Promise<void> {
+    const { userData } = useStore.getState();
+    await requestObject(ENDPOINTS.GEOFENCE_DELETE, HTTP.POST, {
+      IDT: userData!.sessionToken,
+      Id: id,
+    });
+  }
+
+  // ------- Feature 9: command delivery status -------
+
+  async getCommandLog(): Promise<
+    { command: string; status: string; sentAt: number; deliveredAt: number; resolvedAt: number }[]
+  > {
+    const { userData } = useStore.getState();
+    const response = await requestObject<{
+      Entries: {
+        Command: string;
+        Status: string;
+        SentAt: number;
+        DeliveredAt: number;
+        ResolvedAt: number;
+      }[];
+    }>(ENDPOINTS.COMMAND_LOG, HTTP.POST, { IDT: userData!.sessionToken });
+
+    return response.Entries.map((e) => ({
+      command: e.Command,
+      status: e.Status,
+      sentAt: e.SentAt,
+      deliveredAt: e.DeliveredAt,
+      resolvedAt: e.ResolvedAt,
     }));
   }
 

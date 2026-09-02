@@ -1,0 +1,132 @@
+{
+  "locate_all": {
+    "title": "Alle",
+    "description": "Ortung von allen Standortanbietern"
+  },
+  "locate_fused": {
+    "title": "Zusammengefasst",
+    "description": "Ortung von Netzwerk/GPS"
+  },
+  "locate_gps": {
+    "title": "GPS",
+    "description": "Ortung per GPS"
+  },
+  "locate_cell": {
+    "title": "Mobilfunk",
+    "description": "Ortung durch umliegende Funkmasten mit OpenCelliD und/oder BeaconDB"
+  },
+  "locate_last": {
+    "title": "Zuletzt bekannt",
+    "description": "Letzte bekannte Position (schnell, aber möglicherweise veraltet)"
+  },
+  "ring": {
+    "title": "Klingeln",
+    "description": "Einen lauten Ton auf dem Gerät abspielen"
+  },
+  "flash": {
+    "title": "Blitz",
+    "description": "Taschenlampe aktivieren"
+  },
+  "lock": {
+    "title": "Sperren",
+    "description": "Gerätebildschirm sperren"
+  },
+  "factory_reset": {
+    "title": "Werkseinstellungen",
+    "description": "Alle Daten löschen und Gerät auf Werkseinstellungen zurücksetzen"
+  },
+  "camera_front": {
+    "title": "Frontkamera",
+    "description": "Foto mit der Frontkamera machen"
+  },
+  "camera_back": {
+    "title": "Hauptkamera",
+    "description": "Foto mit der Hauptkamera machen"
+  },
+  "view_photos": {
+    "title": "Fotos anzeigen",
+    "description": "Vom Gerät aufgenommene Fotos anzeigen"
+  },
+  "gps_on": {
+    "title": "Standortdienste aktivieren"
+  },
+  "gps_off": {
+    "title": "Standortdienste deaktivieren"
+  },
+  "bluetooth_on": {
+    "title": "Bluetooth aktivieren"
+  },
+  "bluetooth_off": {
+    "title": "Bluetooth deaktivieren"
+  },
+  "ringer_normal": {
+    "title": "Normal",
+    "description": "Klingelmodus auf Normal einstellen"
+  },
+  "ringer_vibrate": {
+    "title": "Vibrieren",
+    "description": "Klingelmodus auf Vibration einstellen"
+  },
+  "ringer_silent": {
+    "title": "Lautlos",
+    "description": "Klingelmodus auf Lautlos einstellen"
+  },
+  "dnd_on": {
+    "title": "„Nicht stören“-Modus aktivieren"
+  },
+  "dnd_off": {
+    "title": "„Nicht stören“-Modus deaktivieren"
+  },
+  "success": {
+    "locate_all": "Ortung wird angefordert…",
+    "locate_fused": "Ortung wird angefordert…",
+    "locate_gps": "Ortung wird angefordert…",
+    "locate_cell": "Ortung wird angefordert…",
+    "locate_last": "Letzte bekannte Position wird angefordert…",
+    "ring": "Gerät klingelt…",
+    "flash": "Taschenlampe blitzt…",
+    "lock": "Gerät wird gesperrt…",
+    "delete": "Gerät wird zurückgesetzt…",
+    "camera_front": "Foto wird aufgenommen…",
+    "camera_back": "Foto wird aufgenommen…",
+    "bluetooth_on": "Bluetooth wird aktiviert…",
+    "bluetooth_off": "Bluetooth wird deaktiviert…",
+    "gps_on": "Standortdienste werden aktiviert…",
+    "gps_off": "Standortdienste werden deaktiviert…",
+    "ringermode_normal": "Klingelton wird auf normal gestellt…",
+    "ringermode_vibrate": "Klingelton wird auf Vibration gestellt…",
+    "ringermode_silent": "Klingelton wird auf lautlos gestellt…",
+    "nodisturb_on": "„Nicht stören“-Modus wird aktiviert…",
+    "nodisturb_off": "„Nicht stören“-Modus wird deaktiviert…"
+  },
+  "disable": "Deaktivieren",
+  "enable": "Aktivieren",
+  "locate_group": {
+    "title": "Lokalisieren",
+    "description": "Bekomme einen Standort von einem Standortanbieter"
+  },
+  "general_group": {
+    "title": "Allgemein",
+    "description": "Einige allgemeine hilfreiche Befehle"
+  },
+  "camera_group": {
+    "title": "Kamera",
+    "description": "Nimm ein Foto auf oder schau es an"
+  },
+  "location_service_group": {
+    "title": "Ortungsdienste",
+    "description": "Ortungsdienste aktivieren/deaktivieren"
+  },
+  "bluetooth_group": {
+    "title": "Bluetooth",
+    "description": "Bluetooth aktivieren/deaktivieren"
+  },
+  "dnd_group": {
+    "title": "Nicht stören",
+    "description": "Nicht stören aktivieren/deaktivieren"
+  },
+  "ringer_group": {
+    "title": "Klingel",
+    "description": "Setze den Klingelmodus"
+  }
+}

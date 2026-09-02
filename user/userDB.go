@@ -79,6 +79,63 @@ type AuditLog struct {
 	CreatedAt int64
 }
 
+// Feature 1: geofencing. Plaintext at rest -- same trust boundary as
+// commands (owner authenticated over HTTPS), not part of the E2E-encrypted
+// location/picture path.
+type Geofence struct {
+	Id           uint64 `gorm:"primaryKey"`
+	UserID       uint64 `gorm:"index"`
+	Name         string
+	Lat          float64
+	Lon          float64
+	RadiusMeters float64
+	Enabled      bool
+	CreatedAt    int64
+}
+
+// Feature 10: web push subscriptions, used to notify the web UI of new
+// locations/pictures instead of relying on it to poll. Standard Web Push
+// subscription fields (endpoint + keys); payloads sent through it are just
+// "something changed, go refetch" pings, never location content itself.
+type WebPushSubscription struct {
+	Id        uint64 `gorm:"primaryKey"`
+	UserID    uint64 `gorm:"index"`
+	Endpoint  string `gorm:"uniqueIndex"`
+	P256dh    string
+	Auth      string
+	CreatedAt int64
+}
+
+// Feature 3: time-limited public share links. The server only ever stores
+// an opaque, owner-encrypted blob (encrypted_payload) -- the AES key that
+// decrypts it lives solely in the share URL's fragment (#...), which
+// browsers never send to any server. This is a re-encryption of a single
+// snapshot the owner chose to share, not a live feed of the device's
+// regular E2E-encrypted location history.
+type SharedLocation struct {
+	Id               uint64 `gorm:"primaryKey"`
+	UserID           uint64 `gorm:"index"`
+	Token            string `gorm:"uniqueIndex"`
+	EncryptedPayload string
+	ExpiresAt        int64
+	CreatedAt        int64
+}
+
+// Feature 9: command delivery status. One row per command sent to a
+// device, tracking its lifecycle from "sent" through "delivered" (the
+// device polled and received it) to a final "executed" or "failed"
+// result reported back by the device. Never stores anything about the
+// E2E-encrypted payloads themselves -- just the command name/status.
+type CommandLog struct {
+	Id          uint64 `gorm:"primaryKey"`
+	UserID      uint64 `gorm:"index"`
+	Command     string
+	Status      string // "sent" | "delivered" | "executed" | "failed"
+	SentAt      int64
+	DeliveredAt int64 // 0 until delivered
+	ResolvedAt  int64 // 0 until executed/failed
+}
+
 // Account represents a *login* an owner uses on the web UI to see and
 // switch between several of their devices. It intentionally does NOT
 // carry any encryption material: locations/pictures stay end-to-end

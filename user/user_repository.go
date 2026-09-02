@@ -109,6 +109,7 @@ func (u *UserRepository) AddLocation(user *FMDUser, loc string) {
 	u.UB.Create(&Location{Position: loc, UserID: user.Id})
 	metrics.Locations.Inc()
 	u.pruneLocations(user)
+	u.NotifyWebPushSubscribers(user, "location")
 }
 
 func (u *UserRepository) pruneLocations(user *FMDUser) {
@@ -134,6 +135,7 @@ func (u *UserRepository) AddPicture(user *FMDUser, pic string) {
 	u.UB.Create(&Picture{Content: pic, UserID: user.Id})
 	metrics.Pictures.Inc()
 	u.prunePictures(user)
+	u.NotifyWebPushSubscribers(user, "picture")
 }
 
 func (u *UserRepository) prunePictures(user *FMDUser) {
@@ -265,6 +267,7 @@ func (u *UserRepository) SetCommandToUser(user *FMDUser, cmd string, cmdTime uin
 		if user.CommandToUser == "" {
 			metrics.PendingCommands.Inc()
 		}
+		u.LogCommandSent(user, cmd)
 	}
 
 	user.CommandToUser = cmd
@@ -283,6 +286,7 @@ func (u *UserRepository) GetCommandToUser(user *FMDUser) (string, uint64, string
 
 	if user.CommandToUser != "" {
 		metrics.PendingCommands.Dec()
+		u.MarkLatestCommandDelivered(user)
 	}
 
 	// Clear the command so that the app only gets it once

@@ -142,8 +142,7 @@ const getFingerprint = async (binaryDer: Uint8Array<ArrayBuffer>) => {
   return new Uint8Array(hashBuf).toHex();
 };
 
-export const sign = async (rsaCryptoKey: CryptoKey, msg: string) => {
-  const msgBytes = new TextEncoder().encode(msg);
+export const sign = async (rsaCryptoKey: CryptoKey, msg: string) => {  const msgBytes = new TextEncoder().encode(msg);
   const pssParams = { name: 'RSA-PSS', saltLength: 32 };
   const sig = await crypto.subtle.sign(pssParams, rsaCryptoKey, msgBytes);
   const sigBytes = new Uint8Array(sig);
@@ -182,4 +181,72 @@ export const decryptData = async (rsaCryptoKey: CryptoKey, encryptedBase64: stri
   } catch {
     throw new Error('Decryption failed');
   }
+};
+
+// ------- Feature 3: time-limited public share links -------
+//
+// The server only ever stores the AES-GCM ciphertext below. The random
+// AES key is embedded only in the share URL's fragment (after '#'), which
+// browsers never transmit to any server -- so the server-side token alone
+// can never decrypt the payload.
+
+const toBase64Url = (bytes: Uint8Array): string => {
+  let binary = '';
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+
+const fromBase64Url = (b64url: string): Uint8Array => {
+  const padded = b64url.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = '='.repeat((4 - (padded.length % 4)) % 4);
+  const binary = atob(padded + padding);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+};
+
+/**
+ * Encrypts arbitrary JSON-serializable data with a freshly generated AES-GCM
+ * key. Returns the ciphertext (safe to send to the server) and the key as a
+ * base64url string (must stay client-side, e.g. in a URL fragment).
+ */
+export const encryptForShareLink = async (
+  plaintext: string
+): Promise<{ ciphertextBase64: string; keyBase64Url: string }> => {
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+    'encrypt',
+  ]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(plaintext);
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+
+  const rawKey = new Uint8Array(await crypto.subtle.exportKey('raw', key));
+
+  // Store iv + ciphertext together, base64-encoded, since both are needed to decrypt.
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+
+  return {
+    ciphertextBase64: toBase64Url(combined),
+    keyBase64Url: toBase64Url(rawKey),
+  };
+};
+
+/** Inverse of encryptForShareLink. Used by the public share viewer page. */
+export const decryptShareLinkPayload = async (
+  ciphertextBase64: string,
+  keyBase64Url: string
+): Promise<string> => {
+  const combined = fromBase64Url(ciphertextBase64);
+  const iv = combined.slice(0, 12);
+  const ciphertext = combined.slice(12);
+
+  const rawKey = fromBase64Url(keyBase64Url);
+  const key = await crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, [
+    'decrypt',
+  ]);
+
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+  return new TextDecoder().decode(decrypted);
 };

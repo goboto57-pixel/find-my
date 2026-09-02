@@ -17,5 +17,12 @@
   "accuracy": "Accuracy",
   "altitude": "Altitude",
   "speed": "Speed",
-  "bearing": "Bearing"
+  "bearing": "Bearing",
+  "live_tracking": {
+    "title": "Real-time tracking",
+    "description": "Keeps locating the device automatically",
+    "active": "Live",
+    "auto_off": "Real-time tracking turned off automatically after 30 minutes to save the device's battery.",
+    "next_update": "Next update in {{seconds}}s"
+  }
 }

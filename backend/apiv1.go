@@ -414,6 +414,15 @@ func requestSalt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	salt := uio.GetSalt(data.IDT)
+	if salt == "" {
+		// No such user -- return a real error instead of an empty salt.
+		// Silently returning "" here used to make the client-side crypto
+		// library fail with a cryptic "Salt must be a length 8...4gb"
+		// error instead of a clear "not found", e.g. when linking a
+		// mistyped device username to an account.
+		http.Error(w, "Account not found", http.StatusNotFound)
+		return
+	}
 	dataReply := DataPackage{IDT: data.IDT, Data: salt}
 	result, _ := json.Marshal(dataReply)
 	w.Header().Set(HEADER_CONTENT_TYPE, CT_APPLICATION_JSON)

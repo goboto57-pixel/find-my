@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSqlVersion = 8
+const CurrentSqlVersion = 12
 
 const KeyVersion = "fmd_db_version"
 
@@ -81,8 +81,8 @@ func migrateDatabase(db *gorm.DB) {
 		migrateToV2Passwords(db)
 	}
 
-	if actualVersion < 4 && db.Migrator().HasColumn(&FMDUser{}, "UID") {
-		err := runDialectMigration("000004_rename_user_id_name", dialect, db)
+	if actualVersion < 4 {
+		err := runMigration("000004_rename_user_id_name", db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000004_rename_user_id_name")
 			return
@@ -124,6 +124,49 @@ func migrateDatabase(db *gorm.DB) {
 		err := runDialectMigration("000008_add_accounts", dialect, db)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed migration=000008_add_accounts")
+			return
+		}
+	}
+
+	if actualVersion < 9 {
+		// Feature 9: per-command delivery status (sent/delivered/executed/failed).
+		// Purely additive new table, existing installs unaffected.
+		err := runDialectMigration("000009_create_command_logs", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000009_create_command_logs")
+			return
+		}
+	}
+
+	if actualVersion < 10 {
+		// Feature 3: time-limited public share links. Purely additive new
+		// table; the encrypted_payload column holds an owner-encrypted blob
+		// whose decryption key never touches the server (lives only in the
+		// share URL's fragment).
+		err := runDialectMigration("000010_create_shared_locations", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000010_create_shared_locations")
+			return
+		}
+	}
+
+	if actualVersion < 11 {
+		// Feature 10: web push subscriptions, so the web UI can get notified
+		// of new locations/pictures instead of polling.
+		err := runDialectMigration("000011_create_web_push_subscriptions", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000011_create_web_push_subscriptions")
+			return
+		}
+	}
+
+	if actualVersion < 12 {
+		// Feature 1: geofencing. Fence definitions are plaintext at rest,
+		// same trust boundary as commands (see commandData) -- they're not
+		// part of the E2E-encrypted location/picture path.
+		err := runDialectMigration("000012_create_geofences", dialect, db)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed migration=000012_create_geofences")
 			return
 		}
 	}

@@ -23,6 +23,11 @@ export const JSON_HEADER = { 'Content-Type': 'application/json' } as const;
 
 export const ONE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 
+// Feature 3: base URL for the public, unauthenticated share-link lookup.
+// Kept separate from ENDPOINTS in apiv1.ts so the public SharePage can use
+// it without pulling in the authenticated apiService machinery.
+export const ENDPOINTS_SHARE_PUBLIC_URL = 'api/v1/share/public';
+
 // Thrown by requestObject when the server responds 428 Precondition Required,
 // which this API uses specifically to mean "this account has 2FA enabled,
 // retry the request with a TOTP code".
@@ -62,6 +67,44 @@ export abstract class BaseApiService {
 
   // Feature 6: audit log
   abstract getAuditLog(): Promise<{ event: string; remoteIp: string; createdAt: number }[]>;
+
+  // Feature 9: command delivery status
+  abstract getCommandLog(): Promise<
+    { command: string; status: string; sentAt: number; deliveredAt: number; resolvedAt: number }[]
+  >;
+
+  // Feature 3: time-limited public share links
+  abstract createShareLink(
+    encryptedPayload: string,
+    durationSeconds: number
+  ): Promise<{ token: string; expiresAt: number }>;
+  abstract listShareLinks(): Promise<{ token: string; expiresAt: number; createdAt: number }[]>;
+  abstract revokeShareLink(token: string): Promise<void>;
+
+  // Feature 10: web push
+  abstract getWebPushVapidPublicKey(): Promise<string>;
+  abstract subscribeWebPush(endpoint: string, p256dh: string, auth: string): Promise<void>;
+  abstract unsubscribeWebPush(endpoint: string): Promise<void>;
+
+  // Feature 1: geofencing
+  abstract createGeofence(
+    name: string,
+    lat: number,
+    lon: number,
+    radiusMeters: number
+  ): Promise<{
+    id: number;
+    name: string;
+    lat: number;
+    lon: number;
+    radiusMeters: number;
+    enabled: boolean;
+  }>;
+  abstract listGeofences(): Promise<
+    { id: number; name: string; lat: number; lon: number; radiusMeters: number; enabled: boolean }[]
+  >;
+  abstract setGeofenceEnabled(id: number, enabled: boolean): Promise<void>;
+  abstract deleteGeofence(id: number): Promise<void>;
 
   // Feature 7: TOTP (2FA)
   abstract getTotpStatus(): Promise<boolean>;
