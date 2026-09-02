@@ -59,7 +59,7 @@ func TestLogin(t *testing.T) {
 	repo := NewUserRepository(t.TempDir(), "", 5, 5)
 	repo.CreateNewUser("", "", "", pwHash, alice)
 
-	u, token, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	u, token, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,13 +79,13 @@ func TestAccountLocks(t *testing.T) {
 	repo.CreateNewUser("", "", "", pwHash, alice)
 
 	for range MAX_ALLOWED_ATTEMPTS {
-		_, _, err := repo.RequestAccess(alice, "not the password", 3600, "10.0.0.10")
+		_, _, err := repo.RequestAccess(alice, "not the password", 3600, "10.0.0.10", "")
 		if err != ErrWrongPassword {
 			t.Errorf("got wrong error: %s != ErrWrongPassword", err)
 		}
 	}
 
-	_, _, err := repo.RequestAccess(alice, "not the password", 3600, "10.0.0.10")
+	_, _, err := repo.RequestAccess(alice, "not the password", 3600, "10.0.0.10", "")
 	if err != ErrAccountLocked {
 		t.Errorf("got wrong error: %s != ErrAccountLocked", err)
 	}
@@ -95,19 +95,19 @@ func TestUpdatePassword(t *testing.T) {
 	repo := NewUserRepository(t.TempDir(), "", 5, 5)
 	repo.CreateNewUser("", "", "", pwHash, alice)
 
-	u, _, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	u, _, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
 
 	repo.UpdateUserPassword(u, "", "", pwHashNew)
 
-	_, _, err = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	_, _, err = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	if err != ErrWrongPassword {
 		t.Errorf("got wrong error: %s != ErrWrongPassword", err)
 	}
 
-	_, _, err = repo.RequestAccess(alice, pwHashNew, 3600, "10.0.0.10")
+	_, _, err = repo.RequestAccess(alice, pwHashNew, 3600, "10.0.0.10", "")
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
@@ -118,11 +118,11 @@ func TestPushUrl(t *testing.T) {
 	repo.CreateNewUser("", "", "", pwHash, alice)
 
 	url := "http://push.server.invalid/topic"
-	u, _, _ := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	u, _, _ := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	repo.SetPushUrl(u, url)
 
 	// Separate session in order to get a separate user object
-	u, _, _ = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	u, _, _ = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	actual := repo.GetPushUrl(u)
 	if actual != url {
 		t.Errorf("got wrong push url: %s != %s", actual, url)
@@ -133,7 +133,7 @@ func TestAccountDelete(t *testing.T) {
 	repo := NewUserRepository(t.TempDir(), "", 5, 5)
 	repo.CreateNewUser("", "", "", pwHash, alice)
 
-	u, _, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	u, _, err := repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
@@ -143,7 +143,7 @@ func TestAccountDelete(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 	}
 
-	_, _, err = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10")
+	_, _, err = repo.RequestAccess(alice, pwHash, 3600, "10.0.0.10", "")
 	if err != ErrNotFound {
 		t.Errorf("got wrong error: %s != ErrNotFound", err)
 	}
